@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es2021",
+        "skipLibCheck": true,
+        "strict": true,
+        "noImplicitReturns": true,
+        "esModuleInterop": true,
+        "strictFunctionTypes": false,
+        "noUncheckedIndexedAccess": false,
+        "exactOptionalPropertyTypes": true
+    },
+    "files": [
+        "index.ts",
+        "pandemic/index.ts"
+    ]
+}

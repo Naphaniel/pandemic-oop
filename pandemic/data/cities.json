@@ -1,0 +1,8 @@
+[
+    {
+        "name": "atalanta",
+        "neighbours": [
+            "london"
+        ]
+    }
+]

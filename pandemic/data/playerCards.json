@@ -1,0 +1,47 @@
+[
+    {
+        "name": "card 1",
+        "type": "player",
+        "action": "do something"
+    },
+    {
+        "name": "card 2",
+        "type": "player",
+        "action": "do something"
+    },
+    {
+        "name": "card 3",
+        "type": "player",
+        "action": "do something"
+    },
+    {
+        "name": "card 4",
+        "type": "player",
+        "action": "do something"
+    },
+    {
+        "name": "card 5",
+        "type": "player",
+        "action": "do something"
+    },
+    {
+        "name": "card 6",
+        "type": "player",
+        "action": "do something"
+    },
+    {
+        "name": "card 7",
+        "type": "player",
+        "action": "do something"
+    },
+    {
+        "name": "card 8",
+        "type": "player",
+        "action": "do something"
+    },
+    {
+        "name": "card 9",
+        "type": "player",
+        "action": "do something"
+    }
+]

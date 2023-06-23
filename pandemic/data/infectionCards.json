@@ -1,0 +1,47 @@
+[
+    {
+        "name": "card 1",
+        "type": "infection",
+        "action": "do something"
+    },
+    {
+        "name": "card 2",
+        "type": "infection",
+        "action": "do something"
+    },
+    {
+        "name": "card 3",
+        "type": "infection",
+        "action": "do something"
+    },
+    {
+        "name": "card 4",
+        "type": "infection",
+        "action": "do something"
+    },
+    {
+        "name": "card 5",
+        "type": "infection",
+        "action": "do something"
+    },
+    {
+        "name": "card 6",
+        "type": "infection",
+        "action": "do something"
+    },
+    {
+        "name": "card 7",
+        "type": "infection",
+        "action": "do something"
+    },
+    {
+        "name": "card 8",
+        "type": "infection",
+        "action": "do something"
+    },
+    {
+        "name": "card 9",
+        "type": "infection",
+        "action": "do something"
+    }
+]
