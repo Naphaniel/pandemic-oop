@@ -2,11 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const pandemic_1 = require("./pandemic");
 const game = pandemic_1.Game.initialise()
-    .withDifficulty("normal")
+    .removePlayer("")
     .withPlayer("nathan")
-    .withPlayer("blod")
-    .withPlayer("jeff")
     .removePlayer("nathan")
-    .withPlayer("d")
-    .withPlayer("jake");
-const y = game.start();
+    .withPlayer("jake")
+    .withPlayer("nathan")
+    .withDifficulty("normal")
+    .start();
+const [player1, player2, player3] = game.players;

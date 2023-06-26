@@ -1,47 +1,38 @@
 [
     {
-        "name": "card 1",
-        "type": "player",
-        "action": "do something"
+        "id": "player-1",
+        "type": "player"
     },
     {
-        "name": "card 2",
-        "type": "player",
-        "action": "do something"
+        "id": "player-2",
+        "type": "player"
     },
     {
-        "name": "card 3",
-        "type": "player",
-        "action": "do something"
+        "id": "player-3",
+        "type": "player"
     },
     {
-        "name": "card 4",
-        "type": "player",
-        "action": "do something"
+        "id": "player-4",
+        "type": "player"
     },
     {
-        "name": "card 5",
-        "type": "player",
-        "action": "do something"
+        "id": "player-5",
+        "type": "player"
     },
     {
-        "name": "card 6",
-        "type": "player",
-        "action": "do something"
+        "id": "player-6",
+        "type": "player"
     },
     {
-        "name": "card 7",
-        "type": "player",
-        "action": "do something"
+        "id": "player-7",
+        "type": "player"
     },
     {
-        "name": "card 8",
-        "type": "player",
-        "action": "do something"
+        "id": "player-8",
+        "type": "player"
     },
     {
-        "name": "card 9",
-        "type": "player",
-        "action": "do something"
+        "id": "player-9",
+        "type": "player"
     }
 ]

@@ -1,47 +1,26 @@
 [
     {
-        "name": "card 1",
+        "id": "infection-1",
         "type": "infection",
-        "action": "do something"
+        "city": "atalanta",
+        "diseaseType": "red"
     },
     {
-        "name": "card 2",
+        "id": "infection-2",
         "type": "infection",
-        "action": "do something"
+        "city": "atalanta",
+        "diseaseType": "yellow"
     },
     {
-        "name": "card 3",
+        "id": "infection-3",
         "type": "infection",
-        "action": "do something"
+        "city": "atalanta",
+        "diseaseType": "blue"
     },
     {
-        "name": "card 4",
+        "id": "infection-4",
         "type": "infection",
-        "action": "do something"
-    },
-    {
-        "name": "card 5",
-        "type": "infection",
-        "action": "do something"
-    },
-    {
-        "name": "card 6",
-        "type": "infection",
-        "action": "do something"
-    },
-    {
-        "name": "card 7",
-        "type": "infection",
-        "action": "do something"
-    },
-    {
-        "name": "card 8",
-        "type": "infection",
-        "action": "do something"
-    },
-    {
-        "name": "card 9",
-        "type": "infection",
-        "action": "do something"
+        "city": "atalanta",
+        "diseaseType": "black"
     }
 ]

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CityNetwork = void 0;
+exports.CityNetwork = exports.City = void 0;
 const fs_1 = __importDefault(require("fs"));
 const Graph_1 = require("./Graph");
 class City {
@@ -11,20 +11,13 @@ class City {
         this.name = name;
         this.infected = infected;
         this.researchStation = researchStation;
+        this.diseaseCubeCount = 0;
     }
 }
+exports.City = City;
 class CityNetwork {
     constructor() {
         this.graph = new Graph_1.Graph();
-    }
-    getCityByName(name) {
-        return this.graph.vertices.find((city) => city.name === name);
-    }
-    getNeighbouringCities(city) {
-        return this.graph.getNeighbours(city);
-    }
-    areCitiesNeighbours(city1, city2) {
-        return this.graph.areNeighbours(city1, city2);
     }
     static buildFromFile(path) {
         const jsonData = fs_1.default.readFileSync(path, "utf-8");
@@ -42,6 +35,34 @@ class CityNetwork {
             }
         }
         return cityNetwork;
+    }
+    _getCityByName(name) {
+        const city = this.graph.vertices.find((city) => city.name === name);
+        if (city === undefined) {
+            throw new Error("Could not find city. Error loading city config");
+        }
+        return city;
+    }
+    getCityByName(name) {
+        {
+            const city = this.graph.vertices.find((city) => city.name === name);
+            if (city === undefined) {
+                throw new Error("Could not find city. Error loading city config");
+            }
+            return city;
+        }
+    }
+    getNeighbouringCities(city) {
+        return this.graph.getNeighbours(city);
+    }
+    areCitiesNeighbours(city1, city2) {
+        return this.graph.areNeighbours(city1, city2);
+    }
+    infectCity(name, diseaseType, count = 1) {
+        const city = this._getCityByName(name);
+        city.diseaseType = diseaseType;
+        city.infected = true;
+        city.diseaseCubeCount += count;
     }
     *[Symbol.iterator]() {
         for (const city of this.graph) {

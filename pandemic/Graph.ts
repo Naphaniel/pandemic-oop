@@ -6,7 +6,7 @@ interface GraphData<T> {
 }
 
 export class Graph<T> {
-  private readonly _adjacencyList: Map<T, T[]>;
+  private readonly adjacencyList: Map<T, T[]>;
 
   static fromJSONFile<T>(path: string): Graph<T> {
     const jsonData = fs.readFileSync(path, "utf-8");
@@ -25,15 +25,15 @@ export class Graph<T> {
   }
 
   constructor() {
-    this._adjacencyList = new Map<T, T[]>();
+    this.adjacencyList = new Map<T, T[]>();
   }
 
   addVertex(vertex: T): void;
   addVertex(...vertices: T[]): void;
   addVertex(...args: T[]): void {
     for (const vertex of args) {
-      if (!this._adjacencyList.has(vertex)) {
-        this._adjacencyList.set(vertex, []);
+      if (!this.adjacencyList.has(vertex)) {
+        this.adjacencyList.set(vertex, []);
       }
     }
   }
@@ -47,19 +47,19 @@ export class Graph<T> {
       for (const neighbour of neighbours) {
         const neighbourNeighbours = this.getNeighbours(neighbour);
         if (neighbourNeighbours) {
-          this._adjacencyList.set(
+          this.adjacencyList.set(
             neighbour,
             neighbourNeighbours.filter((v) => v !== vertex)
           );
         }
       }
 
-      this._adjacencyList.delete(vertex);
+      this.adjacencyList.delete(vertex);
     }
   }
 
   addEdge(vertex1: T, vertex2: T): void {
-    if (this._adjacencyList.has(vertex1) && this._adjacencyList.has(vertex2)) {
+    if (this.adjacencyList.has(vertex1) && this.adjacencyList.has(vertex2)) {
       const neighbours1 = this.getNeighbours(vertex1);
       const neighbours2 = this.getNeighbours(vertex2);
 
@@ -78,13 +78,13 @@ export class Graph<T> {
     const neighbours2 = this.getNeighbours(vertex2);
 
     if (neighbours1.length >= 1) {
-      this._adjacencyList.set(
+      this.adjacencyList.set(
         vertex1,
         neighbours1.filter((v) => v !== vertex2)
       );
     }
     if (neighbours2.length >= 1) {
-      this._adjacencyList.set(
+      this.adjacencyList.set(
         vertex2,
         neighbours2.filter((v) => v !== vertex1)
       );
@@ -97,21 +97,21 @@ export class Graph<T> {
   }
 
   getNeighbours(vertex: T): T[] {
-    return this._adjacencyList.get(vertex) || [];
+    return this.adjacencyList.get(vertex) || [];
   }
 
   get vertices(): T[] {
-    return Array.from(this._adjacencyList.keys());
+    return Array.from(this.adjacencyList.keys());
   }
 
   hasVertex(vertex: T): boolean {
-    return this._adjacencyList.has(vertex);
+    return this.adjacencyList.has(vertex);
   }
 
   toString(): string {
     let result = "";
 
-    for (const [vertex, neighbours] of this._adjacencyList.entries()) {
+    for (const [vertex, neighbours] of this.adjacencyList.entries()) {
       result += `${vertex} ---> ${neighbours.join(", ")}\n`;
     }
 
@@ -119,7 +119,7 @@ export class Graph<T> {
   }
 
   *[Symbol.iterator](): IterableIterator<T> {
-    for (const vertex of this._adjacencyList.keys()) {
+    for (const vertex of this.adjacencyList.keys()) {
       yield vertex;
     }
   }

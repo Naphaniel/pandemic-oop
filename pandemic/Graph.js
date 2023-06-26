@@ -18,12 +18,12 @@ class Graph {
         return graph;
     }
     constructor() {
-        this._adjacencyList = new Map();
+        this.adjacencyList = new Map();
     }
     addVertex(...args) {
         for (const vertex of args) {
-            if (!this._adjacencyList.has(vertex)) {
-                this._adjacencyList.set(vertex, []);
+            if (!this.adjacencyList.has(vertex)) {
+                this.adjacencyList.set(vertex, []);
             }
         }
     }
@@ -33,14 +33,14 @@ class Graph {
             for (const neighbour of neighbours) {
                 const neighbourNeighbours = this.getNeighbours(neighbour);
                 if (neighbourNeighbours) {
-                    this._adjacencyList.set(neighbour, neighbourNeighbours.filter((v) => v !== vertex));
+                    this.adjacencyList.set(neighbour, neighbourNeighbours.filter((v) => v !== vertex));
                 }
             }
-            this._adjacencyList.delete(vertex);
+            this.adjacencyList.delete(vertex);
         }
     }
     addEdge(vertex1, vertex2) {
-        if (this._adjacencyList.has(vertex1) && this._adjacencyList.has(vertex2)) {
+        if (this.adjacencyList.has(vertex1) && this.adjacencyList.has(vertex2)) {
             const neighbours1 = this.getNeighbours(vertex1);
             const neighbours2 = this.getNeighbours(vertex2);
             if (!neighbours1.includes(vertex2)) {
@@ -55,10 +55,10 @@ class Graph {
         const neighbours1 = this.getNeighbours(vertex1);
         const neighbours2 = this.getNeighbours(vertex2);
         if (neighbours1.length >= 1) {
-            this._adjacencyList.set(vertex1, neighbours1.filter((v) => v !== vertex2));
+            this.adjacencyList.set(vertex1, neighbours1.filter((v) => v !== vertex2));
         }
         if (neighbours2.length >= 1) {
-            this._adjacencyList.set(vertex2, neighbours2.filter((v) => v !== vertex1));
+            this.adjacencyList.set(vertex2, neighbours2.filter((v) => v !== vertex1));
         }
     }
     areNeighbours(vertex1, vertex2) {
@@ -66,23 +66,23 @@ class Graph {
         return neighbours !== undefined && neighbours.includes(vertex2);
     }
     getNeighbours(vertex) {
-        return this._adjacencyList.get(vertex) || [];
+        return this.adjacencyList.get(vertex) || [];
     }
     get vertices() {
-        return Array.from(this._adjacencyList.keys());
+        return Array.from(this.adjacencyList.keys());
     }
     hasVertex(vertex) {
-        return this._adjacencyList.has(vertex);
+        return this.adjacencyList.has(vertex);
     }
     toString() {
         let result = "";
-        for (const [vertex, neighbours] of this._adjacencyList.entries()) {
+        for (const [vertex, neighbours] of this.adjacencyList.entries()) {
             result += `${vertex} ---> ${neighbours.join(", ")}\n`;
         }
         return result;
     }
     *[Symbol.iterator]() {
-        for (const vertex of this._adjacencyList.keys()) {
+        for (const vertex of this.adjacencyList.keys()) {
             yield vertex;
         }
     }

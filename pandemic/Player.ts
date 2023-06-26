@@ -1,254 +1,81 @@
-/*
- * Functionality of Player Module
- *
- * get card from player draw pile
- * discard card from hand and into discard pile
- *
- * Keep track of number of actions used each turn (4 max)
- *
- *
- * Potentially use state pattern to remove actions after 4 actions done
- *
- * Basic Actions:
- *  (Drive) Move to neighoburing city
- *  (Direct flight) Move to a specific city
- *  (Charter Flight) Move to a specific city
- *  (Shuttle Flight) move to a city with research station
- *  Pass
- *
- * Special Actions
- *   Dispatcher - move another player
- *   cure disease
- *
- *
- *  Store location of pawn (city)
- *
- *  Give a from hand to another player
- *
- *  Infectors draw from inection pile
- *  Infectors can add cube to cities
- *
- */
-
-// potentially refaactor like user class in marketplace app and use game as listing example
-
 import { PlayerCard } from "./CardStack";
-import { CityName } from "./CityNetwork";
+import { City, CityName } from "./CityNetwork";
+import { PlayerAccessibleGame } from "./Game";
 
-const NoActionsAvailableError = (playerName: string) =>
-  new Error(
-    `Cannot perform action on ${playerName}. Player is inactive or no actions remaining this turn.`
-  );
-
-type Role =
-  | "unassigned"
+export type Role =
   | "dispatcher"
   | "operations-expert"
   | "scientist"
   | "medic"
-  | "researcher";
+  | "researcher"
+  | "infector";
 
-type State = "active" | "inactive" | "infector";
+type State = "active" | "inactive";
 
-interface DraftPlayer {
-  withRole(role: Role): this & { readonly role: Role };
-  withStartingLocation(city: CityName): this & { readonly location: CityName };
-  ready(): ActivePlayer;
-}
-
-interface Actions {
-  drive(): this;
-  takeDirectFlight(): void;
-  takeCharterFlight(): void;
-  takeShuttleFlight(): void;
-  buildResearchStation(): void;
-  discoverCure(): void;
-  treatDisease(): void;
-  shareKnowledge(): void;
-  pass(): void;
-}
-
-interface CompletePlayer {
-  readonly playerName: string;
-  readonly actionsTaken: number;
-  readonly cards: PlayerCard[];
-  readonly location: CityName;
+export interface BasicPlayer {
+  readonly name: string;
   readonly role: Role;
-  readonly actionable: boolean;
+  readonly location: City;
+  readonly state: State;
+  get cards(): readonly PlayerCard[];
 }
 
-const CompletePlayerProps: readonly (keyof CompletePlayer)[] = [
-  "playerName",
-  "actionsTaken",
-  "cards",
-  "location",
-  "role",
-  "actionable",
-];
-
-interface ActivePlayer extends CompletePlayer, Actions {
-  readonly state: "active";
-  becomeInfector(): InfectorPlayer;
-  endTurn(): InactivePlayer;
+export interface ActivePlayer extends BasicPlayer {
+  takeCards(n: number): void;
+  startTurn(): Omit<ActivePlayer, "startTurn">;
+  endTurn(): Omit<InactivePlayer, "endTurn">;
 }
 
-interface InactivePlayer extends CompletePlayer {
-  readonly state: "inactive";
+export interface InactivePlayer extends BasicPlayer {
+  startTurn(): Omit<ActivePlayer, "startTurn">;
+  endTurn(): Omit<InactivePlayer, "endTurn">;
 }
 
-interface InfectorPlayer extends CompletePlayer {
-  readonly state: "infector";
-  infect(): void;
-}
+export class Player implements ActivePlayer, InactivePlayer {
+  _cards: PlayerCard[];
 
-export type Player =
-  | DraftPlayer
-  | ActivePlayer
-  | InactivePlayer
-  | InfectorPlayer;
+  location: City;
+  state: State;
 
-export const Player = {
-  create(playerName: string): DraftPlayer {
-    return ConcretePlayer.create(playerName);
-  },
-};
-
-class ConcretePlayer {
-  public static readonly maxActionsPerTurn = 4;
-
-  actionsTaken = 0;
-  cards: PlayerCard[] = [];
-  location?: CityName;
-  role?: Role;
-  state?: State;
-
-  get actionable() {
-    return (
-      this.actionsTaken < ConcretePlayer.maxActionsPerTurn &&
-      this.state === "active"
-    );
+  get cards(): readonly PlayerCard[] {
+    return this._cards;
   }
 
-  private constructor(public readonly playerName: string) {}
-
-  static create(playerName: string): DraftPlayer {
-    return new ConcretePlayer(playerName);
+  constructor(
+    public game: PlayerAccessibleGame,
+    public name: string,
+    public role: Role,
+    location: CityName
+  ) {
+    this.location = this.game.cities.getCityByName(location);
+    this._cards = [];
+    this.state = "inactive";
   }
 
-  withRole(role: Role): this & { readonly role: Role } {
-    this.role = role;
-    return this as this & { readonly role: Role };
-  }
-
-  withStartingLocation(city: CityName): this & { readonly location: CityName } {
-    // TODO: construct city object
-    this.location = city;
-    return this as this & { readonly location: CityName };
-  }
-
-  takeCards(n: number): this & { readonly cards: readonly PlayerCard[] } {
-    // TODO: construct card object
-    for (let i = 0; i < n; i++) {
-      this.cards.push({ name: `card ${i}`, type: "player", action: "" });
-    }
-    return this as this & { readonly cards: readonly PlayerCard[] };
-  }
-
-  ready(): ActivePlayer {
-    for (const prop of CompletePlayerProps) {
-      if (this[prop] === undefined) {
-        throw new Error(`Cannot ready player, missing prop ${prop}`);
+  takeCards(n: number = 1): void {
+    const cardsTaken = this.game.playerCardDrawPile.take(n);
+    for (const card of cardsTaken) {
+      if (card.type === "player") {
+        this._cards.push(card);
       }
     }
-    this.state = "active";
-    return this as ActivePlayer;
   }
 
-  becomeInfector(): InfectorPlayer {
-    this.state = "infector";
-    return this as InfectorPlayer;
-  }
-
-  endTurn(): InactivePlayer {
-    this.state = "inactive";
-    return this as InactivePlayer;
-  }
-
-  drive(): this {
-    if (!this.actionable) {
-      throw NoActionsAvailableError(this.playerName);
+  startTurn(): Omit<ActivePlayer, "startTurn"> {
+    if (this !== this.game.currentActivePlayer) {
+      throw new Error(
+        `Cannot start turn for player: ${this.name}. It is not their turn`
+      );
     }
-    // TODO
-    this.actionsTaken++;
-    return this;
+    return this as Omit<ActivePlayer, "startTurn">;
   }
 
-  takeDirectFlight(): this {
-    if (!this.actionable) {
-      throw NoActionsAvailableError(this.playerName);
+  endTurn(): Omit<InactivePlayer, "endTurn"> {
+    if (this === this.game.currentActivePlayer) {
+      throw new Error(
+        `Cannot end turn for player: ${this.name}. It is still their`
+      );
     }
-    // TODO
-    this.actionsTaken++;
-    return this;
+    return this as Omit<InactivePlayer, "endTurn">;
   }
-
-  takeCharterFlight(): this {
-    if (!this.actionable) {
-      throw NoActionsAvailableError(this.playerName);
-    }
-    // TODO
-    this.actionsTaken++;
-    return this;
-  }
-
-  takeShuttleFlight(): this {
-    if (!this.actionable) {
-      throw NoActionsAvailableError(this.playerName);
-    }
-    // TODO
-    this.actionsTaken++;
-    return this;
-  }
-
-  buildResearchStation(): void {
-    if (!this.actionable) {
-      throw NoActionsAvailableError(this.playerName);
-    }
-    // TODO
-    this.actionsTaken++;
-  }
-
-  discoverCure(): void {
-    if (!this.actionable) {
-      throw NoActionsAvailableError(this.playerName);
-    }
-    // TODO
-    this.actionsTaken++;
-  }
-
-  treatDisease(): void {
-    if (!this.actionable) {
-      throw NoActionsAvailableError(this.playerName);
-    }
-    // TODO
-    this.actionsTaken++;
-  }
-
-  shareKnowledge(): void {
-    if (!this.actionable) {
-      throw NoActionsAvailableError(this.playerName);
-    }
-    // TODO
-    this.actionsTaken++;
-  }
-
-  pass(): void {
-    if (!this.actionable) {
-      throw NoActionsAvailableError(this.playerName);
-    }
-    // TODO
-    this.actionsTaken++;
-  }
-
-  infect(): void {}
 }

@@ -1,12 +1,12 @@
 import { Game } from "./pandemic";
 
 const game = Game.initialise()
-  .withDifficulty("normal")
+  .removePlayer("")
   .withPlayer("nathan")
-  .withPlayer("blod")
-  .withPlayer("jeff")
   .removePlayer("nathan")
-  .withPlayer("d")
-  .withPlayer("jake");
+  .withPlayer("jake")
+  .withPlayer("nathan")
+  .withDifficulty("normal")
+  .start();
 
-const y = game.start();
+const [player1, player2, player3] = game.players;
