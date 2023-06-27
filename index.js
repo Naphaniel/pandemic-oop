@@ -7,6 +7,7 @@ const game = pandemic_1.Game.initialise()
     .removePlayer("nathan")
     .withPlayer("jake")
     .withPlayer("nathan")
-    .withDifficulty("normal")
+    .withPlayingOrder(["nathan", "jake"])
     .start();
+console.log(game.playingOrder);
 const [player1, player2, player3] = game.players;

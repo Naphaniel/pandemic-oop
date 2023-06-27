@@ -14,13 +14,16 @@ import {
   EpidemicCard,
 } from "./CardStack";
 
-const cityDataFilePath = path.resolve(__dirname, "data/cities.json");
-const playerCardDataFilePath = path.resolve(__dirname, "data/playerCards.json");
-const infectionCardDataFilePath = path.resolve(
+const CITY_DATA_FILE_PATH = path.resolve(__dirname, "data/cities.json");
+const PLAYER_CARD_DATA_FILE_PATH = path.resolve(
+  __dirname,
+  "data/playerCards.json"
+);
+const INFECTION_CARD_DATA_FILE_PATH = path.resolve(
   __dirname,
   "data/infectionCards.json"
 );
-const epidemicCardDataFilePath = path.resolve(
+const EPIDEMIC_CARD_DATA_FILE_PATH = path.resolve(
   __dirname,
   "data/epidemicCards.json"
 );
@@ -35,7 +38,7 @@ interface SetupGame {
   readonly curesDiscovered: number;
   readonly researchStationsPlaced: number;
   readonly difficulty: Difficulty;
-  get playingOrder(): readonly string[];
+  readonly playingOrder: readonly string[];
   get players(): readonly (ActivePlayer | InactivePlayer)[];
   player(name: string): ActivePlayer | InactivePlayer;
 }
@@ -58,20 +61,17 @@ interface GameSettingUp {
   };
   withPlayingOrder(
     names: string[]
-  ): this & { get playingOrder(): readonly string[] };
+  ): this & { readonly playingOrder: readonly string[] };
   withDifficulty(
     difficulty: Difficulty
   ): this & { readonly difficulty: Difficulty };
 }
 
 interface GameInProgress extends SetupGame {
-  readonly state: "in-progress";
   complete(): GameCompleted;
 }
 
-interface GameCompleted extends SetupGame {
-  readonly state: "completed";
-}
+interface GameCompleted extends SetupGame {}
 
 export interface PlayerAccessibleGame {
   readonly playerCardDrawPile: CardStack<PlayerCard | EpidemicCard>;
@@ -101,27 +101,23 @@ class ConcreteGame {
 
   id = ConcreteGame.nextId++;
   state: State = "setting-up";
-  difficulty?: Difficulty;
-
+  difficulty: Difficulty = "normal";
   infectionRate = 0;
   outbreaks = 0;
   curesDiscovered = 0;
   researchStationsPlaced = 0;
-
-  cities = CityNetwork.buildFromFile(cityDataFilePath);
-
+  cities = CityNetwork.buildFromFile(CITY_DATA_FILE_PATH);
   playerCardDrawPile = CardStack.buildFromFile<PlayerCard | EpidemicCard>(
-    playerCardDataFilePath
+    PLAYER_CARD_DATA_FILE_PATH
   );
   playerCardDiscardedPile = CardStack.buildEmptyStack<PlayerCard>();
   infectionCardDrawPile = CardStack.buildFromFile<InfectionCard>(
-    infectionCardDataFilePath
+    INFECTION_CARD_DATA_FILE_PATH
   );
   infectionCardDiscardedPile = CardStack.buildEmptyStack<InfectionCard>();
   epidemicCardPile = CardStack.buildFromFile<EpidemicCard>(
-    epidemicCardDataFilePath
+    EPIDEMIC_CARD_DATA_FILE_PATH
   );
-
   availableRoles: Role[] = [
     "medic",
     "scientist",
@@ -129,21 +125,16 @@ class ConcreteGame {
     "researcher",
     "operations-expert",
   ];
-
-  _players = new Map<string, Player>();
-  _playingOrder: string[] = [];
+  internalPlayers = new Map<string, Player>();
+  playingOrder: string[] = [];
   currentActivePlayer?: ActivePlayer;
 
   get players(): readonly (ActivePlayer | InactivePlayer)[] {
-    return Array.from(this._players.values());
+    return Array.from(this.internalPlayers.values());
   }
 
   get playerCount(): number {
-    return this._players.size;
-  }
-
-  get playingOrder(): readonly string[] {
-    return this._playingOrder;
+    return this.internalPlayers.size;
   }
 
   assignRandomRole(): Role {
@@ -155,33 +146,28 @@ class ConcreteGame {
     player(name: string): BasicPlayer;
     get players(): readonly BasicPlayer[];
   } {
-    if (this._players.has(name)) {
+    if (this.internalPlayers.has(name)) {
       throw new Error(`Player with name '${name}' already exists`);
     }
     if (this.playerCount >= 4) {
       throw new Error("Cannot add player. Can only have 4 players");
     }
-
     const player = new Player(
       this as PlayerAccessibleGame,
       name,
       this.assignRandomRole(),
       "atalanta"
     );
-
-    this._players.set(name, player);
-    return this as this & {
-      player(name: string): BasicPlayer;
-      get players(): readonly BasicPlayer[];
-    };
+    this.internalPlayers.set(name, player);
+    return this;
   }
 
   removePlayer(name: string): this {
-    const player = this._players.get(name);
+    const player = this.internalPlayers.get(name);
     if (player !== undefined) {
       this.availableRoles.push(player.role);
     }
-    this._players.delete(name);
+    this.internalPlayers.delete(name);
     return this;
   }
 
@@ -189,14 +175,13 @@ class ConcreteGame {
     difficulty: Difficulty
   ): this & { readonly difficulty: Difficulty } {
     this.difficulty = difficulty;
-    return this as this & { difficulty: Difficulty };
+    return this;
   }
 
   withPlayingOrder(
     names: string[]
-  ): this & { get playingOrder(): readonly string[] } {
+  ): this & { readonly playingOrder: readonly string[] } {
     const playerNames = this.players.map((player) => player.name);
-
     const uniqueNames = new Set(names);
     if (uniqueNames.size !== this.playerCount) {
       throw new Error(
@@ -208,8 +193,8 @@ class ConcreteGame {
         `Cannot set playing order to: ${names}. Cannot set order for non-existing players`
       );
     }
-    this._playingOrder = names;
-    return this as this & { get playingOrder(): readonly string[] };
+    this.playingOrder = names;
+    return this;
   }
 
   validateGameState(): void {
@@ -228,19 +213,13 @@ class ConcreteGame {
   setupPlayerCards(): void {
     const cardsToTake =
       this.playerCount === 4 ? 2 : this.playerCount === 3 ? 3 : 4;
-
     this.playerCardDrawPile.shuffle();
-
-    for (const [_, player] of this._players) {
+    for (const [_, player] of this.internalPlayers) {
       player.takeCards(cardsToTake);
     }
   }
 
   setupEpidemicCards(): void {
-    if (this.difficulty === undefined) {
-      throw new Error("Cannot deal epidemic cards. Difficulty not set.");
-    }
-
     const splitCount =
       this.difficulty === "introduction"
         ? 4
@@ -248,13 +227,11 @@ class ConcreteGame {
         ? 5
         : 6;
     const splitCardPiles = this.playerCardDrawPile.split(splitCount);
-
     for (const cardPile of splitCardPiles) {
       const epidemicCard = this.epidemicCardPile.take(1)[0];
       cardPile.put(epidemicCard);
       cardPile.shuffle();
     }
-
     this.playerCardDrawPile = CardStack.merge<PlayerCard | EpidemicCard>(
       splitCardPiles
     );
@@ -262,7 +239,6 @@ class ConcreteGame {
 
   setupInfectionCards(): void {
     this.infectionCardDrawPile.shuffle();
-
     for (let i = 3; i > 0; i--) {
       for (const infectionCard of this.infectionCardDrawPile.take(3)) {
         const { city: cityName, diseaseType } = infectionCard;
@@ -279,28 +255,22 @@ class ConcreteGame {
 
   start(): GameInProgress {
     this.validateGameState();
-
-    if (this._playingOrder.length !== this.playerCount) {
-      this._playingOrder = Array.from(this._players.keys());
+    if (this.playingOrder.length !== this.playerCount) {
+      this.playingOrder = Array.from(this.internalPlayers.keys());
     }
-
-    const firstPlayer = this._players.get(this._playingOrder[0]);
+    const firstPlayer = this.internalPlayers.get(this.playingOrder[0]);
     if (firstPlayer === undefined) {
       throw new Error(`Cannot get player. Player does not exist`);
     }
     firstPlayer.state = "active";
-
     this.currentActivePlayer = firstPlayer;
-
     this.setupCards();
-
     this.state = "in-progress";
-
-    return this as GameInProgress;
+    return this;
   }
 
   player(name: string): ActivePlayer | InactivePlayer {
-    const player = this._players.get(name);
+    const player = this.internalPlayers.get(name);
     if (player === undefined) {
       throw new Error("Cannot get player: ${name}. Player does not exist");
     }
@@ -309,6 +279,6 @@ class ConcreteGame {
 
   complete(): GameCompleted {
     this.state = "completed";
-    return this as GameCompleted;
+    return this;
   }
 }

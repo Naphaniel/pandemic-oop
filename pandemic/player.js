@@ -2,14 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Player = void 0;
 class Player {
-    get cards() {
-        return this._cards;
-    }
     constructor(game, name, role, location) {
         this.game = game;
         this.name = name;
         this.role = role;
-        this._cards = [];
+        this.cards = [];
         this.state = "inactive";
         this.location = this.game.cities.getCityByName(location);
     }
@@ -17,7 +14,7 @@ class Player {
         const cardsTaken = this.game.playerCardDrawPile.take(n);
         for (const card of cardsTaken) {
             if (card.type === "player") {
-                this._cards.push(card);
+                this.cards.push(card);
             }
         }
     }

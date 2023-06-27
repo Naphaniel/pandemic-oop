@@ -7,7 +7,6 @@ export class Stack<T> {
     }
     const stackSize = Math.ceil(stack.size / n);
     const stacks: Stack<T>[] = [];
-
     for (let i = 0; i < stack.size; i += stackSize) {
       const newStack = new Stack<T>();
       for (let j = i; j < i + stackSize && j < stack.size; j++) {
@@ -15,19 +14,16 @@ export class Stack<T> {
       }
       stacks.push(newStack);
     }
-
     return stacks;
   }
 
   static mergeStacks<T>(stacks: Stack<T>[]): Stack<T> {
     const mergedStack = new Stack<T>();
-
     for (const stack of stacks) {
       while (!stack.isEmpty()) {
         mergedStack.push(stack.pop() as T);
       }
     }
-
     return mergedStack;
   }
 

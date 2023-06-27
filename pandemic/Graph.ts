@@ -9,16 +9,12 @@ export class Graph<T> {
   static fromJSONFile<T>(path: string): Graph<T> {
     const jsonData = fs.readFileSync(path, "utf-8");
     const data: GraphData<T> = JSON.parse(jsonData);
-
     const graph = new Graph<T>();
-
     const { vertices, edges } = data;
-
     graph.addVertex(...vertices);
     for (const edge of edges) {
       graph.addEdge(edge.from, edge.to);
     }
-
     return graph;
   }
 

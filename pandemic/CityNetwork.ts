@@ -29,9 +29,7 @@ export class CityNetwork {
   static buildFromFile(path: string): CityNetwork {
     const jsonData = fs.readFileSync(path, "utf-8");
     const data: CityFileData[] = JSON.parse(jsonData);
-
     const cityNetwork = new CityNetwork();
-
     for (const cityData of data) {
       const city = new City(cityData.name);
       cityNetwork.graph.addVertex(city);

@@ -17,7 +17,7 @@ export interface BasicPlayer {
   readonly role: Role;
   readonly location: City;
   readonly state: State;
-  get cards(): readonly PlayerCard[];
+  readonly cards: readonly PlayerCard[];
 }
 
 export interface ActivePlayer extends BasicPlayer {
@@ -32,13 +32,9 @@ export interface InactivePlayer extends BasicPlayer {
 }
 
 export class Player implements ActivePlayer, InactivePlayer {
-  _cards: PlayerCard[] = [];
+  cards: PlayerCard[] = [];
   location: City;
   state: State = "inactive";
-
-  get cards(): readonly PlayerCard[] {
-    return this._cards;
-  }
 
   constructor(
     public game: PlayerAccessibleGame,
@@ -53,7 +49,7 @@ export class Player implements ActivePlayer, InactivePlayer {
     const cardsTaken = this.game.playerCardDrawPile.take(n);
     for (const card of cardsTaken) {
       if (card.type === "player") {
-        this._cards.push(card);
+        this.cards.push(card);
       }
     }
   }
@@ -64,7 +60,7 @@ export class Player implements ActivePlayer, InactivePlayer {
         `Cannot start turn for player: ${this.name}. It is not their turn`
       );
     }
-    return this as Omit<ActivePlayer, "startTurn">;
+    return this;
   }
 
   endTurn(): Omit<InactivePlayer, "endTurn"> {
@@ -73,6 +69,6 @@ export class Player implements ActivePlayer, InactivePlayer {
         `Cannot end turn for player: ${this.name}. It is still their`
       );
     }
-    return this as Omit<InactivePlayer, "endTurn">;
+    return this;
   }
 }
