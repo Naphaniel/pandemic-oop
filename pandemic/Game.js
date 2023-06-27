@@ -26,6 +26,32 @@ exports.Game = {
     },
 };
 class ConcreteGame {
+    constructor() {
+        this.id = ConcreteGame.nextId++;
+        this.state = "setting-up";
+        this.infectionRate = 0;
+        this.outbreaks = 0;
+        this.curesDiscovered = 0;
+        this.researchStationsPlaced = 0;
+        this.cities = CityNetwork_1.CityNetwork.buildFromFile(cityDataFilePath);
+        this.playerCardDrawPile = CardStack_1.CardStack.buildFromFile(playerCardDataFilePath);
+        this.playerCardDiscardedPile = CardStack_1.CardStack.buildEmptyStack();
+        this.infectionCardDrawPile = CardStack_1.CardStack.buildFromFile(infectionCardDataFilePath);
+        this.infectionCardDiscardedPile = CardStack_1.CardStack.buildEmptyStack();
+        this.epidemicCardPile = CardStack_1.CardStack.buildFromFile(epidemicCardDataFilePath);
+        this.availableRoles = [
+            "medic",
+            "scientist",
+            "dispatcher",
+            "researcher",
+            "operations-expert",
+        ];
+        this._players = new Map();
+        this._playingOrder = [];
+    }
+    static initialise() {
+        return new ConcreteGame();
+    }
     get players() {
         return Array.from(this._players.values());
     }
@@ -34,33 +60,6 @@ class ConcreteGame {
     }
     get playingOrder() {
         return this._playingOrder;
-    }
-    constructor() {
-        this.id = ConcreteGame.nextId++;
-        this.state = "setting-up";
-        this.infectionRate = 0;
-        this.outbreaks = 0;
-        this.curesDiscovered = 0;
-        this.researchStationsPlaced = 0;
-        this.availableRoles = [
-            "medic",
-            "scientist",
-            "dispatcher",
-            "researcher",
-            "operations-expert",
-        ];
-        this.cities = CityNetwork_1.CityNetwork.buildFromFile(cityDataFilePath);
-        this.playerCardDrawPile = CardStack_1.CardStack.buildFromFile(playerCardDataFilePath);
-        this.playerCardDiscardedPile = CardStack_1.CardStack.buildEmptyStack();
-        this.infectionCardDrawPile = CardStack_1.CardStack.buildFromFile(infectionCardDataFilePath);
-        this.infectionCardDiscardedPile =
-            CardStack_1.CardStack.buildEmptyStack();
-        this.epidemicCardPile = CardStack_1.CardStack.buildFromFile(epidemicCardDataFilePath);
-        this._players = new Map();
-        this._playingOrder = [];
-    }
-    static initialise() {
-        return new ConcreteGame();
     }
     assignRandomRole() {
         const idx = Math.floor(Math.random() * this.availableRoles.length);

@@ -6,8 +6,6 @@ interface GraphData<T> {
 }
 
 export class Graph<T> {
-  private readonly adjacencyList: Map<T, T[]>;
-
   static fromJSONFile<T>(path: string): Graph<T> {
     const jsonData = fs.readFileSync(path, "utf-8");
     const data: GraphData<T> = JSON.parse(jsonData);
@@ -24,9 +22,7 @@ export class Graph<T> {
     return graph;
   }
 
-  constructor() {
-    this.adjacencyList = new Map<T, T[]>();
-  }
+  private readonly adjacencyList = new Map<T, T[]>();
 
   addVertex(vertex: T): void;
   addVertex(...vertices: T[]): void;
@@ -43,7 +39,6 @@ export class Graph<T> {
   removeVertex(...args: T[]): void {
     for (const vertex of args) {
       const neighbours = this.getNeighbours(vertex);
-
       for (const neighbour of neighbours) {
         const neighbourNeighbours = this.getNeighbours(neighbour);
         if (neighbourNeighbours) {
@@ -53,7 +48,6 @@ export class Graph<T> {
           );
         }
       }
-
       this.adjacencyList.delete(vertex);
     }
   }
@@ -62,11 +56,9 @@ export class Graph<T> {
     if (this.adjacencyList.has(vertex1) && this.adjacencyList.has(vertex2)) {
       const neighbours1 = this.getNeighbours(vertex1);
       const neighbours2 = this.getNeighbours(vertex2);
-
       if (!neighbours1.includes(vertex2)) {
         neighbours1.push(vertex2);
       }
-
       if (!neighbours2.includes(vertex1)) {
         neighbours2.push(vertex1);
       }
@@ -76,7 +68,6 @@ export class Graph<T> {
   removeEdge(vertex1: T, vertex2: T): void {
     const neighbours1 = this.getNeighbours(vertex1);
     const neighbours2 = this.getNeighbours(vertex2);
-
     if (neighbours1.length >= 1) {
       this.adjacencyList.set(
         vertex1,
@@ -110,11 +101,9 @@ export class Graph<T> {
 
   toString(): string {
     let result = "";
-
     for (const [vertex, neighbours] of this.adjacencyList.entries()) {
       result += `${vertex} ---> ${neighbours.join(", ")}\n`;
     }
-
     return result;
   }
 

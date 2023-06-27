@@ -2,6 +2,8 @@ import { PlayerCard } from "./CardStack";
 import { City, CityName } from "./CityNetwork";
 import { PlayerAccessibleGame } from "./Game";
 
+type State = "active" | "inactive";
+
 export type Role =
   | "dispatcher"
   | "operations-expert"
@@ -9,8 +11,6 @@ export type Role =
   | "medic"
   | "researcher"
   | "infector";
-
-type State = "active" | "inactive";
 
 export interface BasicPlayer {
   readonly name: string;
@@ -32,10 +32,9 @@ export interface InactivePlayer extends BasicPlayer {
 }
 
 export class Player implements ActivePlayer, InactivePlayer {
-  _cards: PlayerCard[];
-
+  _cards: PlayerCard[] = [];
   location: City;
-  state: State;
+  state: State = "inactive";
 
   get cards(): readonly PlayerCard[] {
     return this._cards;
@@ -48,8 +47,6 @@ export class Player implements ActivePlayer, InactivePlayer {
     location: CityName
   ) {
     this.location = this.game.cities.getCityByName(location);
-    this._cards = [];
-    this.state = "inactive";
   }
 
   takeCards(n: number = 1): void {

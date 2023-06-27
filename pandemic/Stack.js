@@ -2,45 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Stack = void 0;
 class Stack {
-    get size() {
-        return this._items.length;
-    }
     constructor() {
-        this._items = [];
-    }
-    isEmpty() {
-        return this._items.length === 0;
-    }
-    push(arg1, ...args) {
-        if (Array.isArray(arg1)) {
-            this._items.push(...arg1);
-        }
-        else {
-            this._items.push(arg1, ...args);
-        }
-    }
-    pop() {
-        return this._items.pop();
-    }
-    get top() {
-        return this._items[this.size - 1];
-    }
-    clear() {
-        this._items = [];
-    }
-    shuffle() {
-        for (let i = this.size - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [this._items[i], this._items[j]] = [this._items[j], this._items[i]];
-        }
-    }
-    toString() {
-        return this._items.toString();
-    }
-    *[Symbol.iterator]() {
-        for (const item of this._items) {
-            yield item;
-        }
+        this.items = [];
     }
     static splitStacks(stack, n) {
         if (n < 1) {
@@ -51,7 +14,7 @@ class Stack {
         for (let i = 0; i < stack.size; i += stackSize) {
             const newStack = new Stack();
             for (let j = i; j < i + stackSize && j < stack.size; j++) {
-                newStack.push(stack._items[j]);
+                newStack.push(stack.items[j]);
             }
             stacks.push(newStack);
         }
@@ -65,6 +28,43 @@ class Stack {
             }
         }
         return mergedStack;
+    }
+    get size() {
+        return this.items.length;
+    }
+    get top() {
+        return this.items[this.size - 1];
+    }
+    isEmpty() {
+        return this.items.length === 0;
+    }
+    push(arg1, ...args) {
+        if (Array.isArray(arg1)) {
+            this.items.push(...arg1);
+        }
+        else {
+            this.items.push(arg1, ...args);
+        }
+    }
+    pop() {
+        return this.items.pop();
+    }
+    clear() {
+        this.items = [];
+    }
+    shuffle() {
+        for (let i = this.size - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [this.items[i], this.items[j]] = [this.items[j], this.items[i]];
+        }
+    }
+    toString() {
+        return this.items.toString();
+    }
+    *[Symbol.iterator]() {
+        for (const item of this.items) {
+            yield item;
+        }
     }
 }
 exports.Stack = Stack;

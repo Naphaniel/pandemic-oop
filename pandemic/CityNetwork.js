@@ -36,12 +36,15 @@ class CityNetwork {
         }
         return cityNetwork;
     }
-    _getCityByName(name) {
+    getMutableCityByName(name) {
         const city = this.graph.vertices.find((city) => city.name === name);
         if (city === undefined) {
             throw new Error("Could not find city. Error loading city config");
         }
         return city;
+    }
+    areCitiesNeighbours(city1, city2) {
+        return this.graph.areNeighbours(city1, city2);
     }
     getCityByName(name) {
         {
@@ -55,11 +58,8 @@ class CityNetwork {
     getNeighbouringCities(city) {
         return this.graph.getNeighbours(city);
     }
-    areCitiesNeighbours(city1, city2) {
-        return this.graph.areNeighbours(city1, city2);
-    }
     infectCity(name, diseaseType, count = 1) {
-        const city = this._getCityByName(name);
+        const city = this.getMutableCityByName(name);
         city.diseaseType = diseaseType;
         city.infected = true;
         city.diseaseCubeCount += count;

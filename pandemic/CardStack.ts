@@ -1,5 +1,4 @@
 import fs from "fs";
-
 import { Stack } from "./Stack";
 import { CityName } from "./CityNetwork";
 import { DiseaseType } from "./Disease";
@@ -26,24 +25,11 @@ export interface EpidemicCard extends Card {
 }
 
 export class CardStack<T extends Card> {
-  private readonly stack: Stack<T>;
-
-  private constructor(stack?: Stack<T>) {
-    if (stack === undefined) {
-      this.stack = new Stack<T>();
-      return;
-    }
-    this.stack = stack;
-  }
-
   static buildFromFile<T extends Card>(path: string): CardStack<T> {
     const cardStack = new CardStack<T>();
-
     const jsonData = fs.readFileSync(path, "utf-8");
     const data: T[] = JSON.parse(jsonData);
-
     cardStack.stack.push(...data);
-
     return cardStack;
   }
 
@@ -61,8 +47,20 @@ export class CardStack<T extends Card> {
     return CardStack.buildFromExistingStack(mergedStack);
   }
 
+  private constructor(private readonly stack = new Stack<T>()) {}
+
+  put(card: T): void {
+    this.stack.push(card);
+  }
+
   shuffle(): void {
     this.stack.shuffle();
+  }
+
+  split(n: number): CardStack<T>[] {
+    return Stack.splitStacks<T>(this.stack, n).map((stack) =>
+      CardStack.buildFromExistingStack<T>(stack)
+    );
   }
 
   take(n: number = 1): T[] {
@@ -78,16 +76,6 @@ export class CardStack<T extends Card> {
       cards.push(card);
     }
     return cards;
-  }
-
-  put(card: T): void {
-    this.stack.push(card);
-  }
-
-  split(n: number): CardStack<T>[] {
-    return Stack.splitStacks<T>(this.stack, n).map((stack) =>
-      CardStack.buildFromExistingStack<T>(stack)
-    );
   }
 
   *[Symbol.iterator](): IterableIterator<T> {

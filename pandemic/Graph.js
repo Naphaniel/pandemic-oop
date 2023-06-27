@@ -6,6 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Graph = void 0;
 const fs_1 = __importDefault(require("fs"));
 class Graph {
+    constructor() {
+        this.adjacencyList = new Map();
+    }
     static fromJSONFile(path) {
         const jsonData = fs_1.default.readFileSync(path, "utf-8");
         const data = JSON.parse(jsonData);
@@ -16,9 +19,6 @@ class Graph {
             graph.addEdge(edge.from, edge.to);
         }
         return graph;
-    }
-    constructor() {
-        this.adjacencyList = new Map();
     }
     addVertex(...args) {
         for (const vertex of args) {

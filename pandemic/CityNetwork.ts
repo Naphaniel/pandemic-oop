@@ -14,24 +14,18 @@ interface CityFileData {
 
 export class City {
   readonly diseaseType?: DiseaseType;
-  readonly diseaseCubeCount: number;
+  readonly diseaseCubeCount: number = 0;
 
   constructor(
     public readonly name: CityName,
     public readonly infected: boolean = false,
     public readonly researchStation: boolean = false
-  ) {
-    this.diseaseCubeCount = 0;
-  }
+  ) {}
 }
 
+export type CityName = "atalanta" | "london";
+
 export class CityNetwork {
-  private readonly graph: Graph<City>;
-
-  private constructor() {
-    this.graph = new Graph<City>();
-  }
-
   static buildFromFile(path: string): CityNetwork {
     const jsonData = fs.readFileSync(path, "utf-8");
     const data: CityFileData[] = JSON.parse(jsonData);
@@ -52,12 +46,18 @@ export class CityNetwork {
     return cityNetwork;
   }
 
-  private _getCityByName(name: CityName): Mutable<City> {
+  private readonly graph = new Graph<City>();
+
+  private getMutableCityByName(name: CityName): Mutable<City> {
     const city = this.graph.vertices.find((city) => city.name === name);
     if (city === undefined) {
       throw new Error("Could not find city. Error loading city config");
     }
     return city;
+  }
+
+  areCitiesNeighbours(city1: City, city2: City): boolean {
+    return this.graph.areNeighbours(city1, city2);
   }
 
   getCityByName(name: CityName): City {
@@ -74,12 +74,8 @@ export class CityNetwork {
     return this.graph.getNeighbours(city);
   }
 
-  areCitiesNeighbours(city1: City, city2: City): boolean {
-    return this.graph.areNeighbours(city1, city2);
-  }
-
   infectCity(name: CityName, diseaseType: DiseaseType, count = 1) {
-    const city = this._getCityByName(name);
+    const city = this.getMutableCityByName(name);
     city.diseaseType = diseaseType;
     city.infected = true;
     city.diseaseCubeCount += count;
@@ -91,5 +87,3 @@ export class CityNetwork {
     }
   }
 }
-
-export type CityName = "atalanta" | "london";

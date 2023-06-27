@@ -7,13 +7,6 @@ exports.CardStack = void 0;
 const fs_1 = __importDefault(require("fs"));
 const Stack_1 = require("./Stack");
 class CardStack {
-    constructor(stack) {
-        if (stack === undefined) {
-            this.stack = new Stack_1.Stack();
-            return;
-        }
-        this.stack = stack;
-    }
     static buildFromFile(path) {
         const cardStack = new CardStack();
         const jsonData = fs_1.default.readFileSync(path, "utf-8");
@@ -32,8 +25,17 @@ class CardStack {
         const mergedStack = Stack_1.Stack.mergeStacks(stacks);
         return CardStack.buildFromExistingStack(mergedStack);
     }
+    constructor(stack = new Stack_1.Stack()) {
+        this.stack = stack;
+    }
+    put(card) {
+        this.stack.push(card);
+    }
     shuffle() {
         this.stack.shuffle();
+    }
+    split(n) {
+        return Stack_1.Stack.splitStacks(this.stack, n).map((stack) => CardStack.buildFromExistingStack(stack));
     }
     take(n = 1) {
         if (n < 0) {
@@ -48,12 +50,6 @@ class CardStack {
             cards.push(card);
         }
         return cards;
-    }
-    put(card) {
-        this.stack.push(card);
-    }
-    split(n) {
-        return Stack_1.Stack.splitStacks(this.stack, n).map((stack) => CardStack.buildFromExistingStack(stack));
     }
     *[Symbol.iterator]() {
         for (const card of this.stack) {

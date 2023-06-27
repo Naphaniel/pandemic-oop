@@ -1,5 +1,4 @@
 import path from "path";
-
 import { CityNetwork } from "./CityNetwork";
 import {
   Player,
@@ -29,21 +28,6 @@ const epidemicCardDataFilePath = path.resolve(
 type State = "setting-up" | "in-progress" | "completed";
 type Difficulty = "introduction" | "normal" | "heroic";
 
-interface GameSettingUp {
-  withPlayer(name: string): this & {
-    player(name: string): BasicPlayer;
-    get players(): readonly BasicPlayer[];
-  };
-  withPlayingOrder(
-    names: string[]
-  ): this & { get playingOrder(): readonly string[] };
-  withDifficulty(
-    difficulty: Difficulty
-  ): this & { readonly difficulty: Difficulty };
-  removePlayer(name: string): this;
-  start(): GameInProgress;
-}
-
 interface SetupGame {
   readonly state: State;
   readonly infectionRate: number;
@@ -64,6 +48,21 @@ const setupGameProps: readonly (keyof SetupGame)[] = [
   "researchStationsPlaced",
   "difficulty",
 ] as const;
+
+interface GameSettingUp {
+  removePlayer(name: string): this;
+  start(): GameInProgress;
+  withPlayer(name: string): this & {
+    player(name: string): BasicPlayer;
+    get players(): readonly BasicPlayer[];
+  };
+  withPlayingOrder(
+    names: string[]
+  ): this & { get playingOrder(): readonly string[] };
+  withDifficulty(
+    difficulty: Difficulty
+  ): this & { readonly difficulty: Difficulty };
+}
 
 interface GameInProgress extends SetupGame {
   readonly state: "in-progress";
@@ -94,29 +93,45 @@ export const Game = {
 };
 
 class ConcreteGame {
+  public static initialise(): GameSettingUp {
+    return new ConcreteGame();
+  }
+
   static nextId: number = 0;
 
-  id: number;
-  state: State;
+  id = ConcreteGame.nextId++;
+  state: State = "setting-up";
   difficulty?: Difficulty;
 
-  infectionRate: number;
-  outbreaks: number;
-  curesDiscovered: number;
-  researchStationsPlaced: number;
+  infectionRate = 0;
+  outbreaks = 0;
+  curesDiscovered = 0;
+  researchStationsPlaced = 0;
 
-  cities: CityNetwork;
+  cities = CityNetwork.buildFromFile(cityDataFilePath);
 
-  playerCardDrawPile: CardStack<PlayerCard | EpidemicCard>;
-  playerCardDiscardedPile: CardStack<PlayerCard | EpidemicCard>;
-  infectionCardDrawPile: CardStack<InfectionCard>;
-  infectionCardDiscardedPile: CardStack<InfectionCard>;
-  epidemicCardPile: CardStack<EpidemicCard>;
+  playerCardDrawPile = CardStack.buildFromFile<PlayerCard | EpidemicCard>(
+    playerCardDataFilePath
+  );
+  playerCardDiscardedPile = CardStack.buildEmptyStack<PlayerCard>();
+  infectionCardDrawPile = CardStack.buildFromFile<InfectionCard>(
+    infectionCardDataFilePath
+  );
+  infectionCardDiscardedPile = CardStack.buildEmptyStack<InfectionCard>();
+  epidemicCardPile = CardStack.buildFromFile<EpidemicCard>(
+    epidemicCardDataFilePath
+  );
 
-  availableRoles: Role[];
+  availableRoles: Role[] = [
+    "medic",
+    "scientist",
+    "dispatcher",
+    "researcher",
+    "operations-expert",
+  ];
 
-  _players: Map<string, Player>;
-  _playingOrder: string[];
+  _players = new Map<string, Player>();
+  _playingOrder: string[] = [];
   currentActivePlayer?: ActivePlayer;
 
   get players(): readonly (ActivePlayer | InactivePlayer)[] {
@@ -129,46 +144,6 @@ class ConcreteGame {
 
   get playingOrder(): readonly string[] {
     return this._playingOrder;
-  }
-
-  private constructor() {
-    this.id = ConcreteGame.nextId++;
-    this.state = "setting-up";
-
-    this.infectionRate = 0;
-    this.outbreaks = 0;
-    this.curesDiscovered = 0;
-    this.researchStationsPlaced = 0;
-
-    this.availableRoles = [
-      "medic",
-      "scientist",
-      "dispatcher",
-      "researcher",
-      "operations-expert",
-    ];
-
-    this.cities = CityNetwork.buildFromFile(cityDataFilePath);
-
-    this.playerCardDrawPile = CardStack.buildFromFile<
-      PlayerCard | EpidemicCard
-    >(playerCardDataFilePath);
-    this.playerCardDiscardedPile = CardStack.buildEmptyStack<PlayerCard>();
-    this.infectionCardDrawPile = CardStack.buildFromFile<InfectionCard>(
-      infectionCardDataFilePath
-    );
-    this.infectionCardDiscardedPile =
-      CardStack.buildEmptyStack<InfectionCard>();
-    this.epidemicCardPile = CardStack.buildFromFile<EpidemicCard>(
-      epidemicCardDataFilePath
-    );
-
-    this._players = new Map<string, Player>();
-    this._playingOrder = [];
-  }
-
-  public static initialise(): GameSettingUp {
-    return new ConcreteGame();
   }
 
   assignRandomRole(): Role {

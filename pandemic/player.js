@@ -9,9 +9,9 @@ class Player {
         this.game = game;
         this.name = name;
         this.role = role;
-        this.location = this.game.cities.getCityByName(location);
         this._cards = [];
         this.state = "inactive";
+        this.location = this.game.cities.getCityByName(location);
     }
     takeCards(n = 1) {
         const cardsTaken = this.game.playerCardDrawPile.take(n);
