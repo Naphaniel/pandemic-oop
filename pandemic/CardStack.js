@@ -25,6 +25,9 @@ class CardStack {
         const mergedStack = Stack_1.Stack.mergeStacks(stacks);
         return CardStack.buildFromExistingStack(mergedStack);
     }
+    get contents() {
+        return Array.from(this.stack);
+    }
     constructor(stack = new Stack_1.Stack()) {
         this.stack = stack;
     }

@@ -7,11 +7,20 @@ exports.CityNetwork = exports.City = void 0;
 const fs_1 = __importDefault(require("fs"));
 const Graph_1 = require("./Graph");
 class City {
-    constructor(name, infected = false, researchStation = false) {
+    get isInfected() {
+        return this.diseaseType !== undefined;
+    }
+    constructor(name, hasResearchStation = false) {
         this.name = name;
-        this.infected = infected;
-        this.researchStation = researchStation;
+        this.hasResearchStation = hasResearchStation;
         this.diseaseCubeCount = 0;
+    }
+    buildResearchStation() {
+        this.hasResearchStation = true;
+    }
+    infect(disease, count = 1) {
+        this.diseaseType = disease;
+        this.diseaseCubeCount += count;
     }
 }
 exports.City = City;
@@ -36,15 +45,10 @@ class CityNetwork {
         }
         return cityNetwork;
     }
-    getMutableCityByName(name) {
-        const city = this.graph.vertices.find((city) => city.name === name);
-        if (city === undefined) {
-            throw new Error("Could not find city. Error loading city config");
-        }
-        return city;
-    }
     areCitiesNeighbours(city1, city2) {
-        return this.graph.areNeighbours(city1, city2);
+        const tempCity1 = typeof city1 === "string" ? this.getCityByName(city1) : city1;
+        const tempCity2 = typeof city2 === "string" ? this.getCityByName(city2) : city2;
+        return this.graph.areNeighbours(tempCity1, tempCity2);
     }
     getCityByName(name) {
         {
@@ -56,13 +60,8 @@ class CityNetwork {
         }
     }
     getNeighbouringCities(city) {
-        return this.graph.getNeighbours(city);
-    }
-    infectCity(name, diseaseType, count = 1) {
-        const city = this.getMutableCityByName(name);
-        city.diseaseType = diseaseType;
-        city.infected = true;
-        city.diseaseCubeCount += count;
+        const tempCity = typeof city === "string" ? this.getCityByName(city) : city;
+        return this.graph.getNeighbours(tempCity);
     }
     *[Symbol.iterator]() {
         for (const city of this.graph) {

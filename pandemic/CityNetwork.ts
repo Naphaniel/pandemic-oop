@@ -1,11 +1,6 @@
 import fs from "fs";
-
 import { Graph } from "./Graph";
 import { DiseaseType } from "./Disease";
-
-type Mutable<T> = {
-  -readonly [K in keyof T]: T[K];
-};
 
 interface CityFileData {
   readonly name: CityName;
@@ -13,14 +8,26 @@ interface CityFileData {
 }
 
 export class City {
-  readonly diseaseType?: DiseaseType;
-  readonly diseaseCubeCount: number = 0;
+  diseaseType?: DiseaseType;
+  diseaseCubeCount: number = 0;
+
+  get isInfected(): boolean {
+    return this.diseaseType !== undefined;
+  }
 
   constructor(
     public readonly name: CityName,
-    public readonly infected: boolean = false,
-    public readonly researchStation: boolean = false
+    public hasResearchStation: boolean = false
   ) {}
+
+  buildResearchStation(): void {
+    this.hasResearchStation = true;
+  }
+
+  infect(disease: DiseaseType, count = 1): void {
+    this.diseaseType = disease;
+    this.diseaseCubeCount += count;
+  }
 }
 
 export type CityName = "atalanta" | "london";
@@ -46,19 +53,15 @@ export class CityNetwork {
 
   private readonly graph = new Graph<City>();
 
-  private getMutableCityByName(name: CityName): Mutable<City> {
-    const city = this.graph.vertices.find((city) => city.name === name);
-    if (city === undefined) {
-      throw new Error("Could not find city. Error loading city config");
-    }
-    return city;
+  areCitiesNeighbours(city1: City | CityName, city2: City | CityName): boolean {
+    const tempCity1 =
+      typeof city1 === "string" ? this.getCityByName(city1) : city1;
+    const tempCity2 =
+      typeof city2 === "string" ? this.getCityByName(city2) : city2;
+    return this.graph.areNeighbours(tempCity1, tempCity2);
   }
 
-  areCitiesNeighbours(city1: City, city2: City): boolean {
-    return this.graph.areNeighbours(city1, city2);
-  }
-
-  getCityByName(name: CityName): City {
+  getCityByName(name: CityName): Readonly<City> {
     {
       const city = this.graph.vertices.find((city) => city.name === name);
       if (city === undefined) {
@@ -68,18 +71,12 @@ export class CityNetwork {
     }
   }
 
-  getNeighbouringCities(city: City): City[] {
-    return this.graph.getNeighbours(city);
+  getNeighbouringCities(city: City | CityName): Readonly<City>[] {
+    const tempCity = typeof city === "string" ? this.getCityByName(city) : city;
+    return this.graph.getNeighbours(tempCity);
   }
 
-  infectCity(name: CityName, diseaseType: DiseaseType, count = 1) {
-    const city = this.getMutableCityByName(name);
-    city.diseaseType = diseaseType;
-    city.infected = true;
-    city.diseaseCubeCount += count;
-  }
-
-  *[Symbol.iterator](): IterableIterator<City> {
+  *[Symbol.iterator](): IterableIterator<Readonly<City>> {
     for (const city of this.graph) {
       yield city;
     }

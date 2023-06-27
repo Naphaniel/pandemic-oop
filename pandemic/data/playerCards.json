@@ -1,38 +1,47 @@
 [
     {
         "id": "player-1",
-        "type": "player"
+        "type": "player",
+        "city": "london"
     },
     {
         "id": "player-2",
-        "type": "player"
+        "type": "player",
+        "city": "london"
     },
     {
         "id": "player-3",
-        "type": "player"
+        "type": "player",
+        "city": "london"
     },
     {
         "id": "player-4",
-        "type": "player"
+        "type": "player",
+        "city": "london"
     },
     {
         "id": "player-5",
-        "type": "player"
+        "type": "player",
+        "city": "london"
     },
     {
         "id": "player-6",
-        "type": "player"
+        "type": "player",
+        "city": "london"
     },
     {
         "id": "player-7",
-        "type": "player"
+        "type": "player",
+        "city": "london"
     },
     {
         "id": "player-8",
-        "type": "player"
+        "type": "player",
+        "city": "london"
     },
     {
         "id": "player-9",
-        "type": "player"
+        "type": "player",
+        "city": "london"
     }
 ]

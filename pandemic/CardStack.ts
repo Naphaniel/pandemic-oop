@@ -12,6 +12,7 @@ interface Card {
 
 export interface PlayerCard extends Card {
   readonly type: "player";
+  readonly city?: CityName;
 }
 
 export interface InfectionCard extends Card {
@@ -45,6 +46,10 @@ export class CardStack<T extends Card> {
     const stacks = cardStacks.map((cardStack) => cardStack.stack);
     const mergedStack = Stack.mergeStacks(stacks);
     return CardStack.buildFromExistingStack(mergedStack);
+  }
+
+  get contents(): readonly T[] {
+    return Array.from(this.stack);
   }
 
   private constructor(private readonly stack = new Stack<T>()) {}

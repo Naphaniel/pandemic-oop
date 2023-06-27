@@ -39,6 +39,19 @@ interface SetupGame {
   readonly researchStationsPlaced: number;
   readonly difficulty: Difficulty;
   readonly playingOrder: readonly string[];
+  readonly playerCardDrawPile: Pick<
+    CardStack<PlayerCard | EpidemicCard>,
+    "contents"
+  >;
+  readonly playerCardDiscardedPile: Pick<
+    CardStack<PlayerCard | EpidemicCard>,
+    "contents"
+  >;
+  readonly infectionCardDrawPile: Pick<CardStack<InfectionCard>, "contents">;
+  readonly infectionCardDiscardedPile: Pick<
+    CardStack<InfectionCard>,
+    "contents"
+  >;
   get players(): readonly (ActivePlayer | InactivePlayer)[];
   player(name: string): ActivePlayer | InactivePlayer;
 }
@@ -242,7 +255,8 @@ class ConcreteGame {
     for (let i = 3; i > 0; i--) {
       for (const infectionCard of this.infectionCardDrawPile.take(3)) {
         const { city: cityName, diseaseType } = infectionCard;
-        this.cities.infectCity(cityName, diseaseType, i);
+        const city = this.cities.getCityByName(cityName);
+        city.infect(diseaseType, i);
       }
     }
   }
@@ -265,6 +279,7 @@ class ConcreteGame {
     firstPlayer.state = "active";
     this.currentActivePlayer = firstPlayer;
     this.setupCards();
+    this.cities.getCityByName("atalanta").buildResearchStation();
     this.state = "in-progress";
     return this;
   }
