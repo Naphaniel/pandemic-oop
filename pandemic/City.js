@@ -8,19 +8,19 @@ const fs_1 = __importDefault(require("fs"));
 const Graph_1 = require("./Graph");
 class City {
     get isInfected() {
-        return this.diseaseType !== undefined;
+        return this.diseaseType !== "none" && this.diseaseCubeCount > 0;
     }
     constructor(name, hasResearchStation = false) {
         this.name = name;
         this.hasResearchStation = hasResearchStation;
+        this.diseaseType = "none";
         this.diseaseCubeCount = 0;
     }
     buildResearchStation() {
         this.hasResearchStation = true;
     }
-    infect(disease, count = 1) {
-        this.diseaseType = disease;
-        this.diseaseCubeCount += count;
+    removeResearchStation() {
+        this.hasResearchStation = false;
     }
 }
 exports.City = City;
@@ -44,6 +44,9 @@ class CityNetwork {
             }
         }
         return cityNetwork;
+    }
+    get researchStations() {
+        return this.graph.findVerticesWith("hasResearchStation", true);
     }
     areCitiesNeighbours(city1, city2) {
         const tempCity1 = typeof city1 === "string" ? this.getCityByName(city1) : city1;

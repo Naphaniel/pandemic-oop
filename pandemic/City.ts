@@ -8,11 +8,11 @@ interface CityFileData {
 }
 
 export class City {
-  diseaseType?: DiseaseType;
+  diseaseType: DiseaseType = "none";
   diseaseCubeCount: number = 0;
 
   get isInfected(): boolean {
-    return this.diseaseType !== undefined;
+    return this.diseaseType !== "none" && this.diseaseCubeCount > 0;
   }
 
   constructor(
@@ -24,9 +24,8 @@ export class City {
     this.hasResearchStation = true;
   }
 
-  infect(disease: DiseaseType, count = 1): void {
-    this.diseaseType = disease;
-    this.diseaseCubeCount += count;
+  removeResearchStation(): void {
+    this.hasResearchStation = false;
   }
 }
 
@@ -52,6 +51,13 @@ export class CityNetwork {
   }
 
   private readonly graph = new Graph<City>();
+
+  get researchStations(): readonly Readonly<City>[] {
+    return this.graph.findVerticesWith<"hasResearchStation">(
+      "hasResearchStation",
+      true
+    );
+  }
 
   areCitiesNeighbours(city1: City | CityName, city2: City | CityName): boolean {
     const tempCity1 =

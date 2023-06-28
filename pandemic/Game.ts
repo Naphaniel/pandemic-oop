@@ -1,5 +1,5 @@
 import path from "path";
-import { CityNetwork } from "./CityNetwork";
+import { CityNetwork } from "./City";
 import {
   Player,
   Role,
@@ -7,12 +7,8 @@ import {
   InactivePlayer,
   BasicPlayer,
 } from "./Player";
-import {
-  PlayerCard,
-  InfectionCard,
-  CardStack,
-  EpidemicCard,
-} from "./CardStack";
+import { PlayerCard, InfectionCard, CardStack, EpidemicCard } from "./Card";
+import { DiseaseManager, ReadonlyDiseaseManager } from "./Disease";
 
 const CITY_DATA_FILE_PATH = path.resolve(__dirname, "data/cities.json");
 const PLAYER_CARD_DATA_FILE_PATH = path.resolve(
@@ -33,10 +29,7 @@ type Difficulty = "introduction" | "normal" | "heroic";
 
 interface SetupGame {
   readonly state: State;
-  readonly infectionRate: number;
-  readonly outbreaks: number;
-  readonly curesDiscovered: number;
-  readonly researchStationsPlaced: number;
+  readonly diseaseManager: ReadonlyDiseaseManager;
   readonly difficulty: Difficulty;
   readonly playingOrder: readonly string[];
   readonly playerCardDrawPile: Pick<
@@ -52,15 +45,13 @@ interface SetupGame {
     CardStack<InfectionCard>,
     "contents"
   >;
-  get players(): readonly (ActivePlayer | InactivePlayer)[];
+  get players(): readonly InactivePlayer[];
+  get researchStationsPlaced(): number;
   player(name: string): ActivePlayer | InactivePlayer;
 }
 
 const setupGameProps: readonly (keyof SetupGame)[] = [
   "state",
-  "infectionRate",
-  "outbreaks",
-  "curesDiscovered",
   "researchStationsPlaced",
   "difficulty",
 ] as const;
@@ -90,6 +81,8 @@ export interface PlayerAccessibleGame {
   readonly playerCardDrawPile: CardStack<PlayerCard | EpidemicCard>;
   readonly playerCardDiscardedPile: CardStack<PlayerCard | EpidemicCard>;
   readonly cities: CityNetwork;
+  readonly diseaseManager: DiseaseManager;
+  get researchStationsPlaced(): number;
   get currentActivePlayer(): ActivePlayer;
 }
 
@@ -115,10 +108,7 @@ class ConcreteGame {
   id = ConcreteGame.nextId++;
   state: State = "setting-up";
   difficulty: Difficulty = "normal";
-  infectionRate = 0;
-  outbreaks = 0;
-  curesDiscovered = 0;
-  researchStationsPlaced = 0;
+  diseaseManager = new DiseaseManager();
   cities = CityNetwork.buildFromFile(CITY_DATA_FILE_PATH);
   playerCardDrawPile = CardStack.buildFromFile<PlayerCard | EpidemicCard>(
     PLAYER_CARD_DATA_FILE_PATH
@@ -142,7 +132,11 @@ class ConcreteGame {
   playingOrder: string[] = [];
   currentActivePlayer?: ActivePlayer;
 
-  get players(): readonly (ActivePlayer | InactivePlayer)[] {
+  get researchStationsPlaced(): number {
+    return this.cities.researchStations.length;
+  }
+
+  get players(): readonly InactivePlayer[] {
     return Array.from(this.internalPlayers.values());
   }
 
@@ -228,7 +222,7 @@ class ConcreteGame {
       this.playerCount === 4 ? 2 : this.playerCount === 3 ? 3 : 4;
     this.playerCardDrawPile.shuffle();
     for (const [_, player] of this.internalPlayers) {
-      player.takeCards(cardsToTake);
+      player.drawCards(cardsToTake);
     }
   }
 
@@ -256,7 +250,7 @@ class ConcreteGame {
       for (const infectionCard of this.infectionCardDrawPile.take(3)) {
         const { city: cityName, diseaseType } = infectionCard;
         const city = this.cities.getCityByName(cityName);
-        city.infect(diseaseType, i);
+        this.diseaseManager.infect(city, diseaseType, i);
       }
     }
   }

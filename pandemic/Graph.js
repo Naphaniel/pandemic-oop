@@ -20,6 +20,9 @@ class Graph {
         }
         return graph;
     }
+    get vertices() {
+        return Array.from(this.adjacencyList.keys());
+    }
     addVertex(...args) {
         for (const vertex of args) {
             if (!this.adjacencyList.has(vertex)) {
@@ -61,15 +64,21 @@ class Graph {
             this.adjacencyList.set(vertex2, neighbours2.filter((v) => v !== vertex1));
         }
     }
+    findVerticesWith(key, value) {
+        let result = [];
+        for (const vertex of this.vertices) {
+            if (vertex[key] === value) {
+                result.push(vertex);
+            }
+        }
+        return result;
+    }
     areNeighbours(vertex1, vertex2) {
         const neighbours = this.getNeighbours(vertex1);
         return neighbours !== undefined && neighbours.includes(vertex2);
     }
     getNeighbours(vertex) {
         return this.adjacencyList.get(vertex) || [];
-    }
-    get vertices() {
-        return Array.from(this.adjacencyList.keys());
     }
     hasVertex(vertex) {
         return this.adjacencyList.has(vertex);

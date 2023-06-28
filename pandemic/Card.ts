@@ -1,6 +1,6 @@
 import fs from "fs";
 import { Stack } from "./Stack";
-import { CityName } from "./CityNetwork";
+import { CityName } from "./City";
 import { DiseaseType } from "./Disease";
 
 type CardType = "player" | "infection" | "epidemic";
@@ -13,6 +13,7 @@ interface Card {
 export interface PlayerCard extends Card {
   readonly type: "player";
   readonly city?: CityName;
+  readonly diseaseType?: DiseaseType;
 }
 
 export interface InfectionCard extends Card {

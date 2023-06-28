@@ -20,6 +20,10 @@ export class Graph<T> {
 
   private readonly adjacencyList = new Map<T, T[]>();
 
+  get vertices(): T[] {
+    return Array.from(this.adjacencyList.keys());
+  }
+
   addVertex(vertex: T): void;
   addVertex(...vertices: T[]): void;
   addVertex(...args: T[]): void {
@@ -78,6 +82,16 @@ export class Graph<T> {
     }
   }
 
+  findVerticesWith<K extends keyof T>(key: K, value: T[K]): T[] {
+    let result = [];
+    for (const vertex of this.vertices) {
+      if (vertex[key] === value) {
+        result.push(vertex);
+      }
+    }
+    return result;
+  }
+
   areNeighbours(vertex1: T, vertex2: T): boolean {
     const neighbours = this.getNeighbours(vertex1);
     return neighbours !== undefined && neighbours.includes(vertex2);
@@ -85,10 +99,6 @@ export class Graph<T> {
 
   getNeighbours(vertex: T): T[] {
     return this.adjacencyList.get(vertex) || [];
-  }
-
-  get vertices(): T[] {
-    return Array.from(this.adjacencyList.keys());
   }
 
   hasVertex(vertex: T): boolean {

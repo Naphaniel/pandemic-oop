@@ -9,19 +9,13 @@ const game = Game.initialise()
 
 const [player1, player2, player3] = game.players;
 
-console.log(player1.location);
 console.log(player1.cards);
+console.log(player2.cards);
 console.log("");
-console.log(game.playerCardDrawPile.contents);
 console.log("");
-console.log(game.playerCardDiscardedPile.contents);
 
-player1.startTurn().takeDirectFlightTo("london").takeShuttleFlightTo("london");
+player1.startTurn().takeShuttleFlightTo("london");
 
-console.log("AFTERM FLIGHT");
-console.log(player1.location);
 console.log(player1.cards);
-console.log("");
-console.log(game.playerCardDrawPile.contents);
-console.log("");
-console.log(game.playerCardDiscardedPile.contents);
+console.log(player2.cards);
+console.log(game.researchStationsPlaced);

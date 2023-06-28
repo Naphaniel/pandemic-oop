@@ -5,18 +5,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Game = void 0;
 const path_1 = __importDefault(require("path"));
-const CityNetwork_1 = require("./CityNetwork");
+const City_1 = require("./City");
 const Player_1 = require("./Player");
-const CardStack_1 = require("./CardStack");
+const Card_1 = require("./Card");
+const Disease_1 = require("./Disease");
 const CITY_DATA_FILE_PATH = path_1.default.resolve(__dirname, "data/cities.json");
 const PLAYER_CARD_DATA_FILE_PATH = path_1.default.resolve(__dirname, "data/playerCards.json");
 const INFECTION_CARD_DATA_FILE_PATH = path_1.default.resolve(__dirname, "data/infectionCards.json");
 const EPIDEMIC_CARD_DATA_FILE_PATH = path_1.default.resolve(__dirname, "data/epidemicCards.json");
 const setupGameProps = [
     "state",
-    "infectionRate",
-    "outbreaks",
-    "curesDiscovered",
     "researchStationsPlaced",
     "difficulty",
 ];
@@ -30,16 +28,13 @@ class ConcreteGame {
         this.id = ConcreteGame.nextId++;
         this.state = "setting-up";
         this.difficulty = "normal";
-        this.infectionRate = 0;
-        this.outbreaks = 0;
-        this.curesDiscovered = 0;
-        this.researchStationsPlaced = 0;
-        this.cities = CityNetwork_1.CityNetwork.buildFromFile(CITY_DATA_FILE_PATH);
-        this.playerCardDrawPile = CardStack_1.CardStack.buildFromFile(PLAYER_CARD_DATA_FILE_PATH);
-        this.playerCardDiscardedPile = CardStack_1.CardStack.buildEmptyStack();
-        this.infectionCardDrawPile = CardStack_1.CardStack.buildFromFile(INFECTION_CARD_DATA_FILE_PATH);
-        this.infectionCardDiscardedPile = CardStack_1.CardStack.buildEmptyStack();
-        this.epidemicCardPile = CardStack_1.CardStack.buildFromFile(EPIDEMIC_CARD_DATA_FILE_PATH);
+        this.diseaseManager = new Disease_1.DiseaseManager();
+        this.cities = City_1.CityNetwork.buildFromFile(CITY_DATA_FILE_PATH);
+        this.playerCardDrawPile = Card_1.CardStack.buildFromFile(PLAYER_CARD_DATA_FILE_PATH);
+        this.playerCardDiscardedPile = Card_1.CardStack.buildEmptyStack();
+        this.infectionCardDrawPile = Card_1.CardStack.buildFromFile(INFECTION_CARD_DATA_FILE_PATH);
+        this.infectionCardDiscardedPile = Card_1.CardStack.buildEmptyStack();
+        this.epidemicCardPile = Card_1.CardStack.buildFromFile(EPIDEMIC_CARD_DATA_FILE_PATH);
         this.availableRoles = [
             "medic",
             "scientist",
@@ -52,6 +47,9 @@ class ConcreteGame {
     }
     static initialise() {
         return new ConcreteGame();
+    }
+    get researchStationsPlaced() {
+        return this.cities.researchStations.length;
     }
     get players() {
         return Array.from(this.internalPlayers.values());
@@ -112,7 +110,7 @@ class ConcreteGame {
         const cardsToTake = this.playerCount === 4 ? 2 : this.playerCount === 3 ? 3 : 4;
         this.playerCardDrawPile.shuffle();
         for (const [_, player] of this.internalPlayers) {
-            player.takeCards(cardsToTake);
+            player.drawCards(cardsToTake);
         }
     }
     setupEpidemicCards() {
@@ -127,7 +125,7 @@ class ConcreteGame {
             cardPile.put(epidemicCard);
             cardPile.shuffle();
         }
-        this.playerCardDrawPile = CardStack_1.CardStack.merge(splitCardPiles);
+        this.playerCardDrawPile = Card_1.CardStack.merge(splitCardPiles);
     }
     setupInfectionCards() {
         this.infectionCardDrawPile.shuffle();
@@ -135,7 +133,7 @@ class ConcreteGame {
             for (const infectionCard of this.infectionCardDrawPile.take(3)) {
                 const { city: cityName, diseaseType } = infectionCard;
                 const city = this.cities.getCityByName(cityName);
-                city.infect(diseaseType, i);
+                this.diseaseManager.infect(city, diseaseType, i);
             }
         }
     }
