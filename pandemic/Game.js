@@ -151,9 +151,9 @@ class ConcreteGame {
         if (firstPlayer === undefined) {
             throw new Error(`Cannot get player. Player does not exist`);
         }
+        this.setupCards();
         firstPlayer.state = "active";
         this.currentActivePlayer = firstPlayer;
-        this.setupCards();
         this.cities.getCityByName("atalanta").buildResearchStation();
         this.state = "in-progress";
         return this;

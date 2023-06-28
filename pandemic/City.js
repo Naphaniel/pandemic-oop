@@ -8,13 +8,21 @@ const fs_1 = __importDefault(require("fs"));
 const Graph_1 = require("./Graph");
 class City {
     get isInfected() {
-        return this.diseaseType !== "none" && this.diseaseCubeCount > 0;
+        return this.diseases.size > 0;
     }
     constructor(name, hasResearchStation = false) {
         this.name = name;
         this.hasResearchStation = hasResearchStation;
-        this.diseaseType = "none";
-        this.diseaseCubeCount = 0;
+        this.diseases = new Set();
+        this.diseaseCubeCount = new Map([
+            ["red", 0],
+            ["yellow", 0],
+            ["blue", 0],
+            ["black", 0],
+        ]);
+    }
+    isInfectedWith(diseaseType) {
+        return this.diseases.has(diseaseType);
     }
     buildResearchStation() {
         this.hasResearchStation = true;

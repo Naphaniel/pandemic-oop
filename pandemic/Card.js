@@ -54,6 +54,9 @@ class CardStack {
         }
         return cards;
     }
+    clear() {
+        this.stack.clear();
+    }
     *[Symbol.iterator]() {
         for (const card of this.stack) {
             yield card;

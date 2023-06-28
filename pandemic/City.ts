@@ -7,18 +7,34 @@ interface CityFileData {
   readonly neighbours: CityName[];
 }
 
+export type StateOnlyCity = Readonly<
+  Omit<City, "buildResearchStation" | "removeResearchStation"> & {
+    readonly diseases: ReadonlySet<DiseaseType>;
+    readonly diseaseCubeCount: ReadonlyMap<DiseaseType, number>;
+  }
+>;
+
 export class City {
-  diseaseType: DiseaseType = "none";
-  diseaseCubeCount: number = 0;
+  readonly diseases = new Set<DiseaseType>();
+  readonly diseaseCubeCount = new Map<DiseaseType, number>([
+    ["red", 0],
+    ["yellow", 0],
+    ["blue", 0],
+    ["black", 0],
+  ]);
 
   get isInfected(): boolean {
-    return this.diseaseType !== "none" && this.diseaseCubeCount > 0;
+    return this.diseases.size > 0;
   }
 
   constructor(
     public readonly name: CityName,
     public hasResearchStation: boolean = false
   ) {}
+
+  isInfectedWith(diseaseType: DiseaseType): boolean {
+    return this.diseases.has(diseaseType);
+  }
 
   buildResearchStation(): void {
     this.hasResearchStation = true;

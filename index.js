@@ -12,7 +12,7 @@ console.log(player1.cards);
 console.log(player2.cards);
 console.log("");
 console.log("");
-player1.startTurn().takeShuttleFlightTo("london");
+player1.startTurn().pass().finishActionStage().finishDrawStage();
 console.log(player1.cards);
 console.log(player2.cards);
 console.log(game.researchStationsPlaced);

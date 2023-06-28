@@ -3,13 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DiseaseManager = void 0;
 class DiseaseManager {
     constructor() {
-        this.internalDiseaseStates = new Map([
+        this.internalGlobalDiseaseStates = new Map([
             ["red", "uncured"],
             ["yellow", "uncured"],
             ["blue", "uncured"],
             ["black", "uncured"],
         ]);
-        this.internalDiseaseCubeCounts = new Map([
+        this.internalGlobalDiseaseCubeCounts = new Map([
             ["red", 0],
             ["yellow", 0],
             ["blue", 0],
@@ -18,29 +18,33 @@ class DiseaseManager {
         this.outbreaks = 0;
         this.infectionRate = 0;
     }
-    get diseaseStates() {
-        return this.internalDiseaseStates;
+    get globalDiseaseStates() {
+        return this.internalGlobalDiseaseStates;
     }
-    get diseaseCubeCounts() {
-        return this.internalDiseaseCubeCounts;
+    get globalDiseaseCubeCounts() {
+        return this.internalGlobalDiseaseCubeCounts;
     }
     eradicateDisease(diseaseType) {
         this.setStateOf(diseaseType, "eradicated");
     }
     disaseCubeCountOf(diseaseType) {
-        return this.diseaseCubeCounts.get(diseaseType) ?? 0;
+        return this.globalDiseaseCubeCounts.get(diseaseType) ?? 0;
     }
     stateOf(diseaseType) {
-        return this.internalDiseaseStates.get(diseaseType) ?? "uncured";
+        return this.internalGlobalDiseaseStates.get(diseaseType) ?? "uncured";
     }
     setStateOf(diseaseType, state) {
-        this.internalDiseaseStates.set(diseaseType, state);
+        this.internalGlobalDiseaseStates.set(diseaseType, state);
     }
-    treatDiseaseAt(city, count = 1) {
+    epidemicAt(city, diseaseType, count) {
+        this.infectionRate++;
+        this.infect(city, diseaseType, count);
+    }
+    treatDiseaseAt(city, diseaseType, count = 1) {
         if (!city.isInfected) {
             throw new Error(`Cannot treat disease. ${city.name} is not infected`);
         }
-        const { diseaseType, diseaseCubeCount } = city;
+        const diseaseCubeCount = city.diseaseCubeCount.get(diseaseType) ?? 0;
         const diseaseState = this.stateOf(diseaseType);
         switch (diseaseState) {
             case "eradicated":
@@ -48,15 +52,15 @@ class DiseaseManager {
                     throw new Error(`Cannot treat disease. ${diseaseType} is already eradiacted.`);
                 }
             case "cured":
-                city.diseaseCubeCount = 0;
-                this.internalDiseaseCubeCounts.set(diseaseType, this.disaseCubeCountOf(diseaseType) - diseaseCubeCount);
+                city.diseaseCubeCount.set(diseaseType, 0);
+                this.internalGlobalDiseaseCubeCounts.set(diseaseType, this.disaseCubeCountOf(diseaseType) - diseaseCubeCount);
             case "uncured":
-                city.diseaseCubeCount -= count;
-                this.internalDiseaseCubeCounts.set(diseaseType, this.disaseCubeCountOf(diseaseType) - count);
+                city.diseaseCubeCount.set(diseaseType, diseaseCubeCount - count);
+                this.internalGlobalDiseaseCubeCounts.set(diseaseType, this.disaseCubeCountOf(diseaseType) - count);
             default:
         }
-        if (city.diseaseCubeCount === 0) {
-            city.diseaseType = "none";
+        if (city.diseaseCubeCount.get(diseaseType) === 0) {
+            city.diseases.delete(diseaseType);
         }
         if (this.disaseCubeCountOf(diseaseType) === 0) {
             this.eradicateDisease(diseaseType);
@@ -68,10 +72,16 @@ class DiseaseManager {
         }
         this.setStateOf(diseaseType, "cured");
     }
+    outbreak() { }
     infect(city, diseaseType, count = 1) {
-        city.diseaseType = diseaseType;
-        city.diseaseCubeCount += count;
-        this.internalDiseaseCubeCounts.set(diseaseType, this.disaseCubeCountOf(diseaseType) + count);
+        city.diseases.add(diseaseType);
+        let newCityDiseaseCubeCount = (city.diseaseCubeCount.get(diseaseType) ?? 0) + count;
+        if (newCityDiseaseCubeCount > 3) {
+            newCityDiseaseCubeCount = 3;
+            this.outbreak();
+        }
+        city.diseaseCubeCount.set(diseaseType, newCityDiseaseCubeCount);
+        this.internalGlobalDiseaseCubeCounts.set(diseaseType, this.disaseCubeCountOf(diseaseType) + count);
     }
 }
 exports.DiseaseManager = DiseaseManager;

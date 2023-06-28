@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Player = void 0;
+const Card_1 = require("./Card");
 const cannotActOnPlayerError = (player) => new Error(`Cannot act on player: ${player.name}. No actions lef or player is inactive`);
 const playerAlreadyAtCityError = (player) => new Error(`Invalid move. ${player.name} is already at ${player.location.name}`);
 const playerDoesNotNeighbourCityError = (player, city) => new Error(`Invalid move. ${player.location.name} does not neighbour ${typeof city === "string" ? city : city.name}`);
@@ -22,6 +23,7 @@ class Player {
         this.cards = [];
         this.state = "inactive";
         this.movesTakenInTurn = 0;
+        this.cardsDrawnInTurn = 0;
         this.location = this.game.cities.getCityByName(location);
     }
     isPlayerAtDifferentCity(city) {
@@ -43,6 +45,9 @@ class Player {
         }
     }
     discardCards(...cards) {
+        if (!this.hasTooManyCards) {
+            throw new Error("Cannot discard cards. You can only discard if you have > 7");
+        }
         this.cards = this.cards.filter((card) => !cards.includes(card));
         for (const card of cards) {
             this.game.playerCardDiscardedPile.put(card);
@@ -69,17 +74,40 @@ class Player {
     }
     drawCards(n = 1) {
         this.checkValidNumberOfCards();
+        if (this.cardsDrawnInTurn + n > 2 && this.state === "active") {
+            throw new Error(`Cannot draw ${n} cards. Only ${2 - this.cardsDrawnInTurn} draws left`);
+        }
+        if (this.game.playerCardDrawPile.contents.length < n) {
+            // GAME OVER - what do here?
+            throw new Error("GAME OVER!");
+        }
         const cardsTaken = this.game.playerCardDrawPile.take(n);
         for (const card of cardsTaken) {
             if (card.type === "player") {
                 this.cards.push(card);
             }
+            if (card.type === "epidemic") {
+                const [infectionCard] = this.game.infectionCardDrawPile.take();
+                const city = this.game.cities.getCityByName(infectionCard.city);
+                this.game.diseaseManager.epidemicAt(city, infectionCard.diseaseType, 3);
+                this.game.playerCardDiscardedPile.put(card);
+                this.game.infectionCardDiscardedPile.shuffle();
+                const combinedInfectionPile = Card_1.CardStack.merge([
+                    this.game.infectionCardDiscardedPile,
+                    this.game.infectionCardDrawPile,
+                ]);
+                this.game.infectionCardDrawPile = combinedInfectionPile;
+                this.game.infectionCardDiscardedPile.clear();
+            }
         }
+        this.cardsDrawnInTurn += n;
     }
     startTurn() {
         if (this !== this.game.currentActivePlayer) {
             throw new Error(`Cannot start turn for player: ${this.name}. It is not their turn`);
         }
+        this.cardsDrawnInTurn = 0;
+        this.movesTakenInTurn = 0;
         return this;
     }
     endTurn() {
@@ -87,6 +115,7 @@ class Player {
         if (this === this.game.currentActivePlayer) {
             throw new Error(`Cannot end turn for player: ${this.name}. It is still their`);
         }
+        this.state = "inactive";
         return this;
     }
     driveTo(city) {
@@ -186,13 +215,17 @@ class Player {
         this.movesTakenInTurn++;
         return this;
     }
-    treatDisease() {
+    treatDisease(diseaseType) {
         this.checkValidNumberOfCards();
         if (!this.isActionable) {
             throw cannotActOnPlayerError(this);
         }
-        const { diseaseCubeCount, diseaseType } = this.location;
-        this.game.diseaseManager.treatDiseaseAt(this.location, this.role === "medic" ? diseaseCubeCount : 1);
+        if (!this.location.isInfectedWith(diseaseType)) {
+            throw new Error(`Cannot treat disease. ${this.location.name} is not infected with ${diseaseType}`);
+        }
+        this.game.diseaseManager.treatDiseaseAt(this.location, diseaseType, this.role === "medic"
+            ? this.location.diseaseCubeCount.get(diseaseType)
+            : 1);
         if (!(this.role === "medic" &&
             this.game.diseaseManager.stateOf(diseaseType) === "cured")) {
             this.movesTakenInTurn++;
@@ -223,6 +256,18 @@ class Player {
     pass() {
         this.checkValidNumberOfCards();
         this.movesTakenInTurn++;
+        return this;
+    }
+    finishActionStage() {
+        if (this.isActionable) {
+            throw new Error(`Cannot finish action stage. ${this.name} has ${Player.MAX_ACTIONS_PER_TURN - this.movesTakenInTurn} moves left`);
+        }
+        return this;
+    }
+    finishDrawStage() {
+        if (this.cardsDrawnInTurn < 2) {
+            throw new Error(`Cannot finish draw stage. ${this.name} has not taken 2 cards`);
+        }
         return this;
     }
 }

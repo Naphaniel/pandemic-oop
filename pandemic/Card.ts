@@ -84,6 +84,10 @@ export class CardStack<T extends Card> {
     return cards;
   }
 
+  clear(): void {
+    this.stack.clear();
+  }
+
   *[Symbol.iterator](): IterableIterator<T> {
     for (const card of this.stack) {
       yield card;

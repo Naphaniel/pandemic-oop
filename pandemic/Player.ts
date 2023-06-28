@@ -1,5 +1,5 @@
-import { PlayerCard } from "./Card";
-import { City, CityName } from "./City";
+import { CardStack, InfectionCard, PlayerCard } from "./Card";
+import { City, CityName, StateOnlyCity } from "./City";
 import { DiseaseType } from "./Disease";
 import { PlayerAccessibleGame } from "./Game";
 
@@ -44,10 +44,6 @@ const playersCityDoesNotHaveResearchStationError = (
 
 type State = "active" | "inactive";
 
-type StateOnlyCity = Readonly<
-  Omit<City, "infect" | "buildResearchStation" | "removeResearchStation">
->;
-
 export type Role =
   | "dispatcher"
   | "operations-expert"
@@ -66,33 +62,48 @@ export interface BasicPlayer {
   get isActionable(): boolean;
 }
 
-export interface ActivePlayer extends BasicPlayer {
+interface ActionStage extends BasicPlayer {
   readonly movesTakenInTurn: number;
+  discardCards(...cards: PlayerCard[]): ActionStage;
+  driveTo(city: City | CityName): ActionStage;
+  takeDirectFlightTo(city: City | CityName): ActionStage;
+  takeCharterFlightTo(city: City | CityName): ActionStage;
+  takeShuttleFlightTo(city: City | CityName): ActionStage;
+  buildResearchStation(replaceCity?: City | CityName): ActionStage;
+  cureDisease(diseaseType: DiseaseType): ActionStage;
+  treatDisease(diseaseType: DiseaseType): ActionStage;
+  shareKnowledgeWith(player: InactiveStage, card: PlayerCard): ActionStage;
+  pass(): ActionStage;
+  finishActionStage(): DrawStage;
+}
+
+interface DrawStage extends BasicPlayer {
+  readonly cardsDrawnInTurn: number;
   drawCards(n: number): void;
-  discardCards(...cards: PlayerCard[]): ActivePlayer;
-  driveTo(city: City | CityName): ActivePlayer;
-  takeDirectFlightTo(city: City | CityName): ActivePlayer;
-  takeCharterFlightTo(city: City | CityName): ActivePlayer;
-  takeShuttleFlightTo(city: City | CityName): ActivePlayer;
-  buildResearchStation(replaceCity?: City | CityName): ActivePlayer;
-  cureDisease(diseaseType: DiseaseType): ActivePlayer;
-  treatDisease(): ActivePlayer;
-  shareKnowledgeWith(player: InactivePlayer, card: PlayerCard): ActivePlayer;
-  pass(): ActivePlayer;
-  endTurn(): Omit<InactivePlayer, "endTurn">;
+  finishDrawStage(): InfectorStage;
 }
 
-export interface InactivePlayer extends BasicPlayer {
-  startTurn(): ActivePlayer;
+interface InfectorStage extends BasicPlayer {
+  endTurn(): InactiveStage;
 }
 
-export class Player implements ActivePlayer, InactivePlayer {
+interface InactiveStage extends BasicPlayer {
+  startTurn(): ActionStage;
+}
+
+export type ActivePlayer = ActionStage | DrawStage | InfectorStage;
+export type InactivePlayer = InactiveStage;
+
+export class Player
+  implements ActionStage, DrawStage, InfectorStage, InactiveStage
+{
   static readonly MAX_ACTIONS_PER_TURN = 4;
 
   cards: PlayerCard[] = [];
   location: City;
   state: State = "inactive";
   movesTakenInTurn = 0;
+  cardsDrawnInTurn = 0;
 
   get isActionable(): boolean {
     return (
@@ -139,7 +150,12 @@ export class Player implements ActivePlayer, InactivePlayer {
     }
   }
 
-  discardCards(...cards: PlayerCard[]): ActivePlayer {
+  discardCards(...cards: PlayerCard[]): ActionStage {
+    if (!this.hasTooManyCards) {
+      throw new Error(
+        "Cannot discard cards. You can only discard if you have > 7"
+      );
+    }
     this.cards = this.cards.filter((card) => !cards.includes(card));
     for (const card of cards) {
       this.game.playerCardDiscardedPile.put(card);
@@ -169,34 +185,60 @@ export class Player implements ActivePlayer, InactivePlayer {
 
   drawCards(n: number = 1): void {
     this.checkValidNumberOfCards();
+    if (this.cardsDrawnInTurn + n > 2 && this.state === "active") {
+      throw new Error(
+        `Cannot draw ${n} cards. Only ${2 - this.cardsDrawnInTurn} draws left`
+      );
+    }
+    if (this.game.playerCardDrawPile.contents.length < n) {
+      // GAME OVER - what do here?
+      throw new Error("GAME OVER!");
+    }
     const cardsTaken = this.game.playerCardDrawPile.take(n);
     for (const card of cardsTaken) {
       if (card.type === "player") {
         this.cards.push(card);
       }
+      if (card.type === "epidemic") {
+        const [infectionCard] = this.game.infectionCardDrawPile.take();
+        const city = this.game.cities.getCityByName(infectionCard.city);
+        this.game.diseaseManager.epidemicAt(city, infectionCard.diseaseType, 3);
+        this.game.playerCardDiscardedPile.put(card);
+        this.game.infectionCardDiscardedPile.shuffle();
+        const combinedInfectionPile = CardStack.merge<InfectionCard>([
+          this.game.infectionCardDiscardedPile,
+          this.game.infectionCardDrawPile,
+        ]);
+        this.game.infectionCardDrawPile = combinedInfectionPile;
+        this.game.infectionCardDiscardedPile.clear();
+      }
     }
+    this.cardsDrawnInTurn += n;
   }
 
-  startTurn(): ActivePlayer {
+  startTurn(): ActionStage {
     if (this !== this.game.currentActivePlayer) {
       throw new Error(
         `Cannot start turn for player: ${this.name}. It is not their turn`
       );
     }
+    this.cardsDrawnInTurn = 0;
+    this.movesTakenInTurn = 0;
     return this;
   }
 
-  endTurn(): Omit<InactivePlayer, "endTurn"> {
+  endTurn(): InactiveStage {
     this.checkValidNumberOfCards();
     if (this === this.game.currentActivePlayer) {
       throw new Error(
         `Cannot end turn for player: ${this.name}. It is still their`
       );
     }
+    this.state = "inactive";
     return this;
   }
 
-  driveTo(city: City | CityName): ActivePlayer {
+  driveTo(city: City | CityName): ActionStage {
     this.checkValidNumberOfCards();
     this.checkValidMovement(city);
     if (!this.game.cities.areCitiesNeighbours(this.location, city)) {
@@ -209,7 +251,7 @@ export class Player implements ActivePlayer, InactivePlayer {
     return this;
   }
 
-  takeDirectFlightTo(city: City | CityName): ActivePlayer {
+  takeDirectFlightTo(city: City | CityName): ActionStage {
     this.checkValidNumberOfCards();
     this.checkValidMovement(city);
     const card = this.cards.find(this.cardForCityPredicate(city));
@@ -224,7 +266,7 @@ export class Player implements ActivePlayer, InactivePlayer {
     return this;
   }
 
-  takeCharterFlightTo(city: City | CityName): ActivePlayer {
+  takeCharterFlightTo(city: City | CityName): ActionStage {
     this.checkValidNumberOfCards();
     this.checkValidMovement(city);
     const card = this.cards.find(this.cardForCityPredicate(this.location));
@@ -239,7 +281,7 @@ export class Player implements ActivePlayer, InactivePlayer {
     return this;
   }
 
-  takeShuttleFlightTo(city: City | CityName): ActivePlayer {
+  takeShuttleFlightTo(city: City | CityName): ActionStage {
     this.checkValidNumberOfCards();
     this.checkValidMovement(city);
     const newCity =
@@ -252,7 +294,7 @@ export class Player implements ActivePlayer, InactivePlayer {
     return this;
   }
 
-  buildResearchStation(replaceCity?: City | CityName): ActivePlayer {
+  buildResearchStation(replaceCity?: City | CityName): ActionStage {
     this.checkValidNumberOfCards();
     if (!this.isActionable) {
       throw cannotActOnPlayerError(this);
@@ -290,7 +332,7 @@ export class Player implements ActivePlayer, InactivePlayer {
     return this;
   }
 
-  cureDisease(diseaseType: DiseaseType): ActivePlayer {
+  cureDisease(diseaseType: DiseaseType): ActionStage {
     this.checkValidNumberOfCards();
     if (!this.isActionable) {
       throw cannotActOnPlayerError(this);
@@ -316,15 +358,22 @@ export class Player implements ActivePlayer, InactivePlayer {
     return this;
   }
 
-  treatDisease(): ActivePlayer {
+  treatDisease(diseaseType: DiseaseType): ActionStage {
     this.checkValidNumberOfCards();
     if (!this.isActionable) {
       throw cannotActOnPlayerError(this);
     }
-    const { diseaseCubeCount, diseaseType } = this.location;
+    if (!this.location.isInfectedWith(diseaseType)) {
+      throw new Error(
+        `Cannot treat disease. ${this.location.name} is not infected with ${diseaseType}`
+      );
+    }
     this.game.diseaseManager.treatDiseaseAt(
       this.location,
-      this.role === "medic" ? diseaseCubeCount : 1
+      diseaseType,
+      this.role === "medic"
+        ? this.location.diseaseCubeCount.get(diseaseType)
+        : 1
     );
     if (
       !(
@@ -338,9 +387,9 @@ export class Player implements ActivePlayer, InactivePlayer {
   }
 
   shareKnowledgeWith(
-    player: InactivePlayer & { cards: PlayerCard[] },
+    player: InactiveStage & { cards: PlayerCard[] },
     researcherCard?: PlayerCard
-  ): ActivePlayer {
+  ): ActionStage {
     this.checkValidNumberOfCards();
     if (!this.isActionable) {
       throw cannotActOnPlayerError(this);
@@ -367,9 +416,29 @@ export class Player implements ActivePlayer, InactivePlayer {
     return this;
   }
 
-  pass(): ActivePlayer {
+  pass(): ActionStage {
     this.checkValidNumberOfCards();
     this.movesTakenInTurn++;
+    return this;
+  }
+
+  finishActionStage(): DrawStage {
+    if (this.isActionable) {
+      throw new Error(
+        `Cannot finish action stage. ${this.name} has ${
+          Player.MAX_ACTIONS_PER_TURN - this.movesTakenInTurn
+        } moves left`
+      );
+    }
+    return this;
+  }
+
+  finishDrawStage(): InfectorStage {
+    if (this.cardsDrawnInTurn < 2) {
+      throw new Error(
+        `Cannot finish draw stage. ${this.name} has not taken 2 cards`
+      );
+    }
     return this;
   }
 }

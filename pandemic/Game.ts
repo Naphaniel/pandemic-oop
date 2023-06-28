@@ -78,8 +78,10 @@ interface GameInProgress extends SetupGame {
 interface GameCompleted extends SetupGame {}
 
 export interface PlayerAccessibleGame {
-  readonly playerCardDrawPile: CardStack<PlayerCard | EpidemicCard>;
-  readonly playerCardDiscardedPile: CardStack<PlayerCard | EpidemicCard>;
+  playerCardDrawPile: CardStack<PlayerCard | EpidemicCard>;
+  playerCardDiscardedPile: CardStack<PlayerCard | EpidemicCard>;
+  infectionCardDrawPile: CardStack<InfectionCard>;
+  infectionCardDiscardedPile: CardStack<InfectionCard>;
   readonly cities: CityNetwork;
   readonly diseaseManager: DiseaseManager;
   get researchStationsPlaced(): number;
@@ -270,9 +272,9 @@ class ConcreteGame {
     if (firstPlayer === undefined) {
       throw new Error(`Cannot get player. Player does not exist`);
     }
+    this.setupCards();
     firstPlayer.state = "active";
     this.currentActivePlayer = firstPlayer;
-    this.setupCards();
     this.cities.getCityByName("atalanta").buildResearchStation();
     this.state = "in-progress";
     return this;
