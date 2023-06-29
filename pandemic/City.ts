@@ -8,11 +8,17 @@ interface CityFileData {
 }
 
 export type StateOnlyCity = Readonly<
-  Omit<City, "buildResearchStation" | "removeResearchStation"> & {
-    readonly diseases: ReadonlySet<DiseaseType>;
-    readonly diseaseCubeCount: ReadonlyMap<DiseaseType, number>;
-  }
->;
+  Omit<
+    City,
+    | "buildResearchStation"
+    | "removeResearchStation"
+    | "diseases"
+    | "diseaseCubeCount"
+  >
+> & {
+  readonly diseases: ReadonlySet<DiseaseType>;
+  readonly diseaseCubeCount: ReadonlyMap<DiseaseType, number>;
+};
 
 export class City {
   readonly diseases = new Set<DiseaseType>();

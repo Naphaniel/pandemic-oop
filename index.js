@@ -5,14 +5,18 @@ const game = pandemic_1.Game.initialise()
     .removePlayer("")
     .withPlayer("nathan")
     .withPlayer("jake")
-    .withPlayingOrder(["nathan", "jake"])
+    .withPlayer("blod")
+    .withPlayingOrder(["nathan", "jake", "blod"])
     .start();
 const [player1, player2, player3] = game.players;
-console.log(player1.cards);
-console.log(player2.cards);
-console.log("");
-console.log("");
-player1.startTurn().pass().finishActionStage().finishDrawStage();
-console.log(player1.cards);
-console.log(player2.cards);
-console.log(game.researchStationsPlaced);
+player1
+    .startTurn()
+    .pass()
+    .pass()
+    .pass()
+    .pass()
+    .finishActionStage()
+    .drawCards(2)
+    .finishDrawStage()
+    .drawInfectionCards()
+    .endTurn();

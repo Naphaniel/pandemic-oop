@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DiseaseManager = void 0;
 class DiseaseManager {
+    get infectionRate() {
+        return this.infectionRateSequence[this.infectionRateStep];
+    }
     constructor(cityNetwork) {
         this.cityNetwork = cityNetwork;
         this.internalGlobalDiseaseStates = new Map([
@@ -17,8 +20,9 @@ class DiseaseManager {
             ["black", 0],
         ]);
         this.outbreakedCities = new Set();
+        this.infectionRateSequence = [2, 2, 2, 3, 3, 4, 4];
+        this.infectionRateStep = 0;
         this.outbreaks = 0;
-        this.infectionRate = 0;
     }
     get globalDiseaseStates() {
         return this.internalGlobalDiseaseStates;
@@ -39,7 +43,7 @@ class DiseaseManager {
         this.internalGlobalDiseaseStates.set(diseaseType, state);
     }
     epidemicAt(city, diseaseType, count) {
-        this.infectionRate++;
+        this.infectionRateStep = Math.min(this.infectionRateStep + 1, this.infectionRateSequence.length - 1);
         this.infect(city, diseaseType, count);
     }
     treatDiseaseAt(city, diseaseType, count = 1) {

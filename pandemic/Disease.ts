@@ -31,11 +31,16 @@ export class DiseaseManager {
   ]);
 
   private outbreakedCities = new Set<City>();
-
-  constructor(private readonly cityNetwork: CityNetwork) {}
+  private readonly infectionRateSequence = [2, 2, 2, 3, 3, 4, 4] as const;
+  private infectionRateStep = 0;
 
   outbreaks = 0;
-  infectionRate = 0;
+
+  get infectionRate() {
+    return this.infectionRateSequence[this.infectionRateStep];
+  }
+
+  constructor(private readonly cityNetwork: CityNetwork) {}
 
   get globalDiseaseStates(): ReadonlyMap<DiseaseType, DiseaseState> {
     return this.internalGlobalDiseaseStates;
@@ -62,7 +67,10 @@ export class DiseaseManager {
   }
 
   epidemicAt(city: City, diseaseType: DiseaseType, count: number) {
-    this.infectionRate++;
+    this.infectionRateStep = Math.min(
+      this.infectionRateStep + 1,
+      this.infectionRateSequence.length - 1
+    );
     this.infect(city, diseaseType, count);
   }
 

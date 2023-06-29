@@ -22,5 +22,47 @@
         "type": "infection",
         "city": "atalanta",
         "diseaseType": "black"
+    },
+    {
+        "id": "infection-5",
+        "type": "infection",
+        "city": "atalanta",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-6",
+        "type": "infection",
+        "city": "atalanta",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-7",
+        "type": "infection",
+        "city": "atalanta",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-8",
+        "type": "infection",
+        "city": "atalanta",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-9",
+        "type": "infection",
+        "city": "atalanta",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-10",
+        "type": "infection",
+        "city": "atalanta",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-11",
+        "type": "infection",
+        "city": "atalanta",
+        "diseaseType": "black"
     }
 ]

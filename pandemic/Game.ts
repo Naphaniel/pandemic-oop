@@ -6,6 +6,7 @@ import {
   ActivePlayer,
   InactivePlayer,
   BasicPlayer,
+  TurnObserver,
 } from "./Player";
 import { PlayerCard, InfectionCard, CardStack, EpidemicCard } from "./Card";
 import { DiseaseManager, ReadonlyDiseaseManager } from "./Disease";
@@ -85,7 +86,6 @@ export interface PlayerAccessibleGame {
   readonly cities: CityNetwork;
   readonly diseaseManager: DiseaseManager;
   get researchStationsPlaced(): number;
-  get currentActivePlayer(): ActivePlayer;
 }
 
 export type Game =
@@ -100,7 +100,7 @@ export const Game = {
   },
 };
 
-class ConcreteGame {
+class ConcreteGame implements TurnObserver {
   public static initialise(): GameSettingUp {
     return new ConcreteGame();
   }
@@ -132,7 +132,7 @@ class ConcreteGame {
   ];
   internalPlayers = new Map<string, Player>();
   playingOrder: string[] = [];
-  currentActivePlayer?: ActivePlayer;
+  currentPlayerIndex = 0;
 
   get researchStationsPlaced(): number {
     return this.cities.researchStations.length;
@@ -167,6 +167,7 @@ class ConcreteGame {
       this.assignRandomRole(),
       "atalanta"
     );
+    player.registerObserver(this);
     this.internalPlayers.set(name, player);
     return this;
   }
@@ -175,6 +176,7 @@ class ConcreteGame {
     const player = this.internalPlayers.get(name);
     if (player !== undefined) {
       this.availableRoles.push(player.role);
+      player.removeObserver(this);
     }
     this.internalPlayers.delete(name);
     return this;
@@ -268,16 +270,23 @@ class ConcreteGame {
     if (this.playingOrder.length !== this.playerCount) {
       this.playingOrder = Array.from(this.internalPlayers.keys());
     }
-    const firstPlayer = this.internalPlayers.get(this.playingOrder[0]);
-    if (firstPlayer === undefined) {
-      throw new Error(`Cannot get player. Player does not exist`);
-    }
     this.setupCards();
-    firstPlayer.state = "active";
-    this.currentActivePlayer = firstPlayer;
+    this.nextPlayerTurn();
     this.cities.getCityByName("atalanta").buildResearchStation();
     this.state = "in-progress";
     return this;
+  }
+
+  nextPlayerTurn(): void {
+    const player = this.internalPlayers.get(
+      this.playingOrder[this.currentPlayerIndex]
+    );
+    if (player === undefined) {
+      throw new Error(`Cannot get player. Player does not exist`);
+    }
+    player.state = "active";
+    this.currentPlayerIndex =
+      (this.currentPlayerIndex + 1) % this.playingOrder.length;
   }
 
   player(name: string): ActivePlayer | InactivePlayer {
@@ -286,6 +295,12 @@ class ConcreteGame {
       throw new Error("Cannot get player: ${name}. Player does not exist");
     }
     return player;
+  }
+
+  onTurnStart(_: Player): void {}
+
+  onTurnEnd(_: Player): void {
+    this.nextPlayerTurn();
   }
 
   complete(): GameCompleted {

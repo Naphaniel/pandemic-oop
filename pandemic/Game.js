@@ -44,6 +44,7 @@ class ConcreteGame {
         ];
         this.internalPlayers = new Map();
         this.playingOrder = [];
+        this.currentPlayerIndex = 0;
     }
     static initialise() {
         return new ConcreteGame();
@@ -69,6 +70,7 @@ class ConcreteGame {
             throw new Error("Cannot add player. Can only have 4 players");
         }
         const player = new Player_1.Player(this, name, this.assignRandomRole(), "atalanta");
+        player.registerObserver(this);
         this.internalPlayers.set(name, player);
         return this;
     }
@@ -76,6 +78,7 @@ class ConcreteGame {
         const player = this.internalPlayers.get(name);
         if (player !== undefined) {
             this.availableRoles.push(player.role);
+            player.removeObserver(this);
         }
         this.internalPlayers.delete(name);
         return this;
@@ -147,16 +150,20 @@ class ConcreteGame {
         if (this.playingOrder.length !== this.playerCount) {
             this.playingOrder = Array.from(this.internalPlayers.keys());
         }
-        const firstPlayer = this.internalPlayers.get(this.playingOrder[0]);
-        if (firstPlayer === undefined) {
-            throw new Error(`Cannot get player. Player does not exist`);
-        }
         this.setupCards();
-        firstPlayer.state = "active";
-        this.currentActivePlayer = firstPlayer;
+        this.nextPlayerTurn();
         this.cities.getCityByName("atalanta").buildResearchStation();
         this.state = "in-progress";
         return this;
+    }
+    nextPlayerTurn() {
+        const player = this.internalPlayers.get(this.playingOrder[this.currentPlayerIndex]);
+        if (player === undefined) {
+            throw new Error(`Cannot get player. Player does not exist`);
+        }
+        player.state = "active";
+        this.currentPlayerIndex =
+            (this.currentPlayerIndex + 1) % this.playingOrder.length;
     }
     player(name) {
         const player = this.internalPlayers.get(name);
@@ -164,6 +171,10 @@ class ConcreteGame {
             throw new Error("Cannot get player: ${name}. Player does not exist");
         }
         return player;
+    }
+    onTurnStart(_) { }
+    onTurnEnd(_) {
+        this.nextPlayerTurn();
     }
     complete() {
         this.state = "completed";

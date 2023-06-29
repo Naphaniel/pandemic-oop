@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Player = void 0;
 const Card_1 = require("./Card");
-const cannotActOnPlayerError = (player) => new Error(`Cannot act on player: ${player.name}. No actions lef or player is inactive`);
+const cannotActOnPlayerError = (player) => new Error(`Cannot act on player: ${player.name}. No actions left or it is not their turn`);
 const playerAlreadyAtCityError = (player) => new Error(`Invalid move. ${player.name} is already at ${player.location.name}`);
 const playerDoesNotNeighbourCityError = (player, city) => new Error(`Invalid move. ${player.location.name} does not neighbour ${typeof city === "string" ? city : city.name}`);
 const playerDoesNotHaveCardError = (player, city) => new Error(`Invalid move. ${player.name} does not have needed city card (${typeof city === "string" ? city : city.name}) to act.`);
@@ -20,12 +20,22 @@ class Player {
         this.game = game;
         this.name = name;
         this.role = role;
+        this.observers = [];
         this.cards = [];
         this.state = "inactive";
         this.movesTakenInTurn = 0;
         this.playerCardsDrawnInTurn = 0;
         this.hasDrawnInfectionCards = false;
         this.location = this.game.cities.getCityByName(location);
+    }
+    registerObserver(observer) {
+        this.observers.push(observer);
+    }
+    removeObserver(observer) {
+        const index = this.observers.indexOf(observer);
+        if (index !== -1) {
+            this.observers.splice(index, 1);
+        }
     }
     isPlayerAtDifferentCity(city) {
         return typeof city === "string"
@@ -105,17 +115,31 @@ class Player {
         return this;
     }
     startTurn() {
-        if (this !== this.game.currentActivePlayer) {
+        if (!this.isActionable) {
             throw new Error(`Cannot start turn for player: ${this.name}. It is not their turn`);
         }
+        this.notifyStartTurn();
         this.playerCardsDrawnInTurn = 0;
         this.movesTakenInTurn = 0;
         return this;
     }
+    notifyStartTurn() {
+        for (const observer of this.observers) {
+            observer.onTurnStart(this);
+        }
+    }
     endTurn() {
-        // notify game that this players turn is over?
+        if (!this.hasDrawnInfectionCards) {
+            throw new Error(`Cannot end turn. ${this.name} has not drawn infection cards`);
+        }
+        this.notifyEndTurn();
         this.state = "inactive";
         return this;
+    }
+    notifyEndTurn() {
+        for (const observer of this.observers) {
+            observer.onTurnEnd(this);
+        }
     }
     driveTo(city) {
         this.checkValidNumberOfCards();
@@ -253,6 +277,9 @@ class Player {
         return this;
     }
     pass() {
+        if (!this.isActionable) {
+            throw cannotActOnPlayerError(this);
+        }
         this.checkValidNumberOfCards();
         this.movesTakenInTurn++;
         return this;

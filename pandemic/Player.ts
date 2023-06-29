@@ -5,7 +5,7 @@ import { PlayerAccessibleGame } from "./Game";
 
 const cannotActOnPlayerError = (player: Player): Error =>
   new Error(
-    `Cannot act on player: ${player.name}. No actions lef or player is inactive`
+    `Cannot act on player: ${player.name}. No actions left or it is not their turn`
   );
 
 const playerAlreadyAtCityError = (player: Player): Error =>
@@ -51,6 +51,18 @@ export type Role =
   | "medic"
   | "researcher"
   | "infector";
+
+export interface TurnObserver {
+  onTurnStart(player: Player): void;
+  onTurnEnd(player: Player): void;
+}
+
+export interface ObservablePlayer {
+  registerObserver(observer: TurnObserver): void;
+  removeObserver(observer: TurnObserver): void;
+  notifyStartTurn(): void;
+  notifyEndTurn(): void;
+}
 
 export interface BasicPlayer {
   readonly name: string;
@@ -98,9 +110,16 @@ export type ActivePlayer = ActionStage | DrawStage | InfectorStage;
 export type InactivePlayer = InactiveStage;
 
 export class Player
-  implements ActionStage, DrawStage, InfectorStage, InactiveStage
+  implements
+    ActionStage,
+    DrawStage,
+    InfectorStage,
+    InactiveStage,
+    ObservablePlayer
 {
   static readonly MAX_ACTIONS_PER_TURN = 4;
+
+  observers: TurnObserver[] = [];
 
   cards: PlayerCard[] = [];
   location: City;
@@ -127,6 +146,17 @@ export class Player
     location: CityName
   ) {
     this.location = this.game.cities.getCityByName(location);
+  }
+
+  registerObserver(observer: TurnObserver): void {
+    this.observers.push(observer);
+  }
+
+  removeObserver(observer: TurnObserver): void {
+    const index = this.observers.indexOf(observer);
+    if (index !== -1) {
+      this.observers.splice(index, 1);
+    }
   }
 
   isPlayerAtDifferentCity(city: City | CityName): boolean {
@@ -224,20 +254,38 @@ export class Player
   }
 
   startTurn(): ActionStage {
-    if (this !== this.game.currentActivePlayer) {
+    if (!this.isActionable) {
       throw new Error(
         `Cannot start turn for player: ${this.name}. It is not their turn`
       );
     }
+    this.notifyStartTurn();
     this.playerCardsDrawnInTurn = 0;
     this.movesTakenInTurn = 0;
     return this;
   }
 
+  notifyStartTurn(): void {
+    for (const observer of this.observers) {
+      observer.onTurnStart(this);
+    }
+  }
+
   endTurn(): InactiveStage {
-    // notify game that this players turn is over?
+    if (!this.hasDrawnInfectionCards) {
+      throw new Error(
+        `Cannot end turn. ${this.name} has not drawn infection cards`
+      );
+    }
+    this.notifyEndTurn();
     this.state = "inactive";
     return this;
+  }
+
+  notifyEndTurn(): void {
+    for (const observer of this.observers) {
+      observer.onTurnEnd(this);
+    }
   }
 
   driveTo(city: City | CityName): ActionStage {
@@ -419,6 +467,9 @@ export class Player
   }
 
   pass(): ActionStage {
+    if (!this.isActionable) {
+      throw cannotActOnPlayerError(this);
+    }
     this.checkValidNumberOfCards();
     this.movesTakenInTurn++;
     return this;
