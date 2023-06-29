@@ -6,10 +6,14 @@ import {
   ActivePlayer,
   InactivePlayer,
   BasicPlayer,
-  TurnObserver,
+  PlayerObserver,
 } from "./Player";
 import { PlayerCard, InfectionCard, CardStack, EpidemicCard } from "./Card";
-import { DiseaseManager, ReadonlyDiseaseManager } from "./Disease";
+import {
+  DiseaseManager,
+  DiseaseObserver,
+  ReadonlyDiseaseManager,
+} from "./Disease";
 
 const CITY_DATA_FILE_PATH = path.resolve(__dirname, "data/cities.json");
 const PLAYER_CARD_DATA_FILE_PATH = path.resolve(
@@ -25,7 +29,7 @@ const EPIDEMIC_CARD_DATA_FILE_PATH = path.resolve(
   "data/epidemicCards.json"
 );
 
-type State = "setting-up" | "in-progress" | "completed";
+type State = "setting-up" | "in-progress" | "lost" | "won";
 type Difficulty = "introduction" | "normal" | "heroic";
 
 interface SetupGame {
@@ -53,8 +57,8 @@ interface SetupGame {
 
 const setupGameProps: readonly (keyof SetupGame)[] = [
   "state",
-  "researchStationsPlaced",
   "difficulty",
+  "playingOrder",
 ] as const;
 
 interface GameSettingUp {
@@ -73,10 +77,12 @@ interface GameSettingUp {
 }
 
 interface GameInProgress extends SetupGame {
-  complete(): GameCompleted;
+  complete(outcome: "lost" | "won"): GameCompleted;
 }
 
-interface GameCompleted extends SetupGame {}
+interface GameCompleted {
+  readonly state: State;
+}
 
 export interface PlayerAccessibleGame {
   playerCardDrawPile: CardStack<PlayerCard | EpidemicCard>;
@@ -100,7 +106,7 @@ export const Game = {
   },
 };
 
-class ConcreteGame implements TurnObserver {
+class ConcreteGame implements PlayerObserver, DiseaseObserver {
   public static initialise(): GameSettingUp {
     return new ConcreteGame();
   }
@@ -267,6 +273,7 @@ class ConcreteGame implements TurnObserver {
 
   start(): GameInProgress {
     this.validateGameState();
+    this.diseaseManager.registerObserver(this);
     if (this.playingOrder.length !== this.playerCount) {
       this.playingOrder = Array.from(this.internalPlayers.keys());
     }
@@ -297,14 +304,33 @@ class ConcreteGame implements TurnObserver {
     return player;
   }
 
+  onEightOutbreaks(): void {
+    this.complete("lost");
+  }
+
+  onNoDiseaseCubes(): void {
+    this.complete("lost");
+  }
+
+  onAllDiseasesCured(): void {
+    this.complete("won");
+  }
+
   onTurnStart(_: Player): void {}
 
   onTurnEnd(_: Player): void {
     this.nextPlayerTurn();
   }
 
-  complete(): GameCompleted {
-    this.state = "completed";
+  onNoPlayerCards(): void {
+    this.complete("lost");
+  }
+
+  complete(outcome: "lost" | "won"): GameCompleted {
+    for (const player of this.internalPlayers.values()) {
+      player.state = "inactive";
+    }
+    this.state = outcome;
     return this;
   }
 }

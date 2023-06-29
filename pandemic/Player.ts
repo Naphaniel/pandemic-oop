@@ -52,16 +52,10 @@ export type Role =
   | "researcher"
   | "infector";
 
-export interface TurnObserver {
+export interface PlayerObserver {
   onTurnStart(player: Player): void;
   onTurnEnd(player: Player): void;
-}
-
-export interface ObservablePlayer {
-  registerObserver(observer: TurnObserver): void;
-  removeObserver(observer: TurnObserver): void;
-  notifyStartTurn(): void;
-  notifyEndTurn(): void;
+  onNoPlayerCards(): void;
 }
 
 export interface BasicPlayer {
@@ -110,16 +104,11 @@ export type ActivePlayer = ActionStage | DrawStage | InfectorStage;
 export type InactivePlayer = InactiveStage;
 
 export class Player
-  implements
-    ActionStage,
-    DrawStage,
-    InfectorStage,
-    InactiveStage,
-    ObservablePlayer
+  implements ActionStage, DrawStage, InfectorStage, InactiveStage
 {
   static readonly MAX_ACTIONS_PER_TURN = 4;
 
-  observers: TurnObserver[] = [];
+  observers: PlayerObserver[] = [];
 
   cards: PlayerCard[] = [];
   location: City;
@@ -148,11 +137,11 @@ export class Player
     this.location = this.game.cities.getCityByName(location);
   }
 
-  registerObserver(observer: TurnObserver): void {
+  registerObserver(observer: PlayerObserver): void {
     this.observers.push(observer);
   }
 
-  removeObserver(observer: TurnObserver): void {
+  removeObserver(observer: PlayerObserver): void {
     const index = this.observers.indexOf(observer);
     if (index !== -1) {
       this.observers.splice(index, 1);
@@ -227,8 +216,7 @@ export class Player
       );
     }
     if (this.game.playerCardDrawPile.contents.length < n) {
-      // GAME OVER - what do here?
-      throw new Error("GAME OVER!");
+      this.notifyNoPlayerCards();
     }
     const cardsTaken = this.game.playerCardDrawPile.take(n);
     for (const card of cardsTaken) {
@@ -251,6 +239,12 @@ export class Player
     }
     this.playerCardsDrawnInTurn += n;
     return this;
+  }
+
+  notifyNoPlayerCards(): void {
+    for (const observer of this.observers) {
+      observer.onNoPlayerCards();
+    }
   }
 
   startTurn(): ActionStage {

@@ -15,8 +15,8 @@ const INFECTION_CARD_DATA_FILE_PATH = path_1.default.resolve(__dirname, "data/in
 const EPIDEMIC_CARD_DATA_FILE_PATH = path_1.default.resolve(__dirname, "data/epidemicCards.json");
 const setupGameProps = [
     "state",
-    "researchStationsPlaced",
     "difficulty",
+    "playingOrder",
 ];
 exports.Game = {
     initialise() {
@@ -147,6 +147,7 @@ class ConcreteGame {
     }
     start() {
         this.validateGameState();
+        this.diseaseManager.registerObserver(this);
         if (this.playingOrder.length !== this.playerCount) {
             this.playingOrder = Array.from(this.internalPlayers.keys());
         }
@@ -172,12 +173,27 @@ class ConcreteGame {
         }
         return player;
     }
+    onEightOutbreaks() {
+        this.complete("lost");
+    }
+    onNoDiseaseCubes() {
+        this.complete("lost");
+    }
+    onAllDiseasesCured() {
+        this.complete("won");
+    }
     onTurnStart(_) { }
     onTurnEnd(_) {
         this.nextPlayerTurn();
     }
-    complete() {
-        this.state = "completed";
+    onNoPlayerCards() {
+        this.complete("lost");
+    }
+    complete(outcome) {
+        for (const player of this.internalPlayers.values()) {
+            player.state = "inactive";
+        }
+        this.state = outcome;
         return this;
     }
 }

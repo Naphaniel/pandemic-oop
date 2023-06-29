@@ -89,8 +89,7 @@ class Player {
             throw new Error(`Cannot draw ${n} cards. Only ${2 - this.playerCardsDrawnInTurn} draws left`);
         }
         if (this.game.playerCardDrawPile.contents.length < n) {
-            // GAME OVER - what do here?
-            throw new Error("GAME OVER!");
+            this.notifyNoPlayerCards();
         }
         const cardsTaken = this.game.playerCardDrawPile.take(n);
         for (const card of cardsTaken) {
@@ -113,6 +112,11 @@ class Player {
         }
         this.playerCardsDrawnInTurn += n;
         return this;
+    }
+    notifyNoPlayerCards() {
+        for (const observer of this.observers) {
+            observer.onNoPlayerCards();
+        }
     }
     startTurn() {
         if (!this.isActionable) {
