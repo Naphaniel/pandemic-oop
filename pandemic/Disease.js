@@ -2,7 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DiseaseManager = void 0;
 class DiseaseManager {
-    constructor() {
+    constructor(cityNetwork) {
+        this.cityNetwork = cityNetwork;
         this.internalGlobalDiseaseStates = new Map([
             ["red", "uncured"],
             ["yellow", "uncured"],
@@ -15,6 +16,7 @@ class DiseaseManager {
             ["blue", 0],
             ["black", 0],
         ]);
+        this.outbreakedCities = new Set();
         this.outbreaks = 0;
         this.infectionRate = 0;
     }
@@ -72,13 +74,26 @@ class DiseaseManager {
         }
         this.setStateOf(diseaseType, "cured");
     }
-    outbreak() { }
+    outbreakAt(city, diseaseType) {
+        const neighbours = this.cityNetwork.getNeighbouringCities(city);
+        this.outbreakedCities.add(city);
+        for (const neighbour of neighbours) {
+            this.infect(neighbour, diseaseType, 1);
+        }
+        this.outbreakedCities.clear();
+        this.outbreaks++;
+    }
     infect(city, diseaseType, count = 1) {
+        if (this.stateOf(diseaseType) === "eradicated") {
+            return;
+        }
         city.diseases.add(diseaseType);
         let newCityDiseaseCubeCount = (city.diseaseCubeCount.get(diseaseType) ?? 0) + count;
         if (newCityDiseaseCubeCount > 3) {
             newCityDiseaseCubeCount = 3;
-            this.outbreak();
+            if (!this.outbreakedCities.has(city)) {
+                this.outbreakAt(city, diseaseType);
+            }
         }
         city.diseaseCubeCount.set(diseaseType, newCityDiseaseCubeCount);
         this.internalGlobalDiseaseCubeCounts.set(diseaseType, this.disaseCubeCountOf(diseaseType) + count);

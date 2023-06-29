@@ -110,8 +110,8 @@ class ConcreteGame {
   id = ConcreteGame.nextId++;
   state: State = "setting-up";
   difficulty: Difficulty = "normal";
-  diseaseManager = new DiseaseManager();
   cities = CityNetwork.buildFromFile(CITY_DATA_FILE_PATH);
+  diseaseManager = new DiseaseManager(this.cities);
   playerCardDrawPile = CardStack.buildFromFile<PlayerCard | EpidemicCard>(
     PLAYER_CARD_DATA_FILE_PATH
   );

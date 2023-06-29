@@ -64,7 +64,7 @@ export interface BasicPlayer {
 
 interface ActionStage extends BasicPlayer {
   readonly movesTakenInTurn: number;
-  discardCards(...cards: PlayerCard[]): ActionStage;
+  discardCards(...cards: PlayerCard[]): this;
   driveTo(city: City | CityName): ActionStage;
   takeDirectFlightTo(city: City | CityName): ActionStage;
   takeCharterFlightTo(city: City | CityName): ActionStage;
@@ -78,12 +78,15 @@ interface ActionStage extends BasicPlayer {
 }
 
 interface DrawStage extends BasicPlayer {
-  readonly cardsDrawnInTurn: number;
-  drawCards(n: number): void;
+  readonly playerCardsDrawnInTurn: number;
+  drawCards(n: number): DrawStage;
+  discardCards(...cards: PlayerCard[]): this;
   finishDrawStage(): InfectorStage;
 }
 
 interface InfectorStage extends BasicPlayer {
+  readonly hasDrawnInfectionCards: boolean;
+  drawInfectionCards(): InfectorStage;
   endTurn(): InactiveStage;
 }
 
@@ -103,7 +106,8 @@ export class Player
   location: City;
   state: State = "inactive";
   movesTakenInTurn = 0;
-  cardsDrawnInTurn = 0;
+  playerCardsDrawnInTurn = 0;
+  hasDrawnInfectionCards = false;
 
   get isActionable(): boolean {
     return (
@@ -150,7 +154,7 @@ export class Player
     }
   }
 
-  discardCards(...cards: PlayerCard[]): ActionStage {
+  discardCards(...cards: PlayerCard[]): this {
     if (!this.hasTooManyCards) {
       throw new Error(
         "Cannot discard cards. You can only discard if you have > 7"
@@ -183,11 +187,13 @@ export class Player
     };
   }
 
-  drawCards(n: number = 1): void {
+  drawCards(n: number = 1): DrawStage {
     this.checkValidNumberOfCards();
-    if (this.cardsDrawnInTurn + n > 2 && this.state === "active") {
+    if (this.playerCardsDrawnInTurn + n > 2 && this.state === "active") {
       throw new Error(
-        `Cannot draw ${n} cards. Only ${2 - this.cardsDrawnInTurn} draws left`
+        `Cannot draw ${n} cards. Only ${
+          2 - this.playerCardsDrawnInTurn
+        } draws left`
       );
     }
     if (this.game.playerCardDrawPile.contents.length < n) {
@@ -213,7 +219,8 @@ export class Player
         this.game.infectionCardDiscardedPile.clear();
       }
     }
-    this.cardsDrawnInTurn += n;
+    this.playerCardsDrawnInTurn += n;
+    return this;
   }
 
   startTurn(): ActionStage {
@@ -222,18 +229,13 @@ export class Player
         `Cannot start turn for player: ${this.name}. It is not their turn`
       );
     }
-    this.cardsDrawnInTurn = 0;
+    this.playerCardsDrawnInTurn = 0;
     this.movesTakenInTurn = 0;
     return this;
   }
 
   endTurn(): InactiveStage {
-    this.checkValidNumberOfCards();
-    if (this === this.game.currentActivePlayer) {
-      throw new Error(
-        `Cannot end turn for player: ${this.name}. It is still their`
-      );
-    }
+    // notify game that this players turn is over?
     this.state = "inactive";
     return this;
   }
@@ -422,6 +424,25 @@ export class Player
     return this;
   }
 
+  drawInfectionCards(): InfectorStage {
+    if (this.hasDrawnInfectionCards) {
+      throw new Error(
+        `Cannot draw infection cards. ${this.name} has already taken cards`
+      );
+    }
+    const infectionCards = this.game.infectionCardDrawPile.take(
+      this.game.diseaseManager.infectionRate
+    );
+    for (const card of infectionCards) {
+      const { city: cityName, diseaseType } = card;
+      const city = this.game.cities.getCityByName(cityName);
+      this.game.diseaseManager.infect(city, diseaseType);
+      this.game.infectionCardDiscardedPile.put(card);
+      this.hasDrawnInfectionCards = true;
+    }
+    return this;
+  }
+
   finishActionStage(): DrawStage {
     if (this.isActionable) {
       throw new Error(
@@ -434,7 +455,7 @@ export class Player
   }
 
   finishDrawStage(): InfectorStage {
-    if (this.cardsDrawnInTurn < 2) {
+    if (this.playerCardsDrawnInTurn < 2) {
       throw new Error(
         `Cannot finish draw stage. ${this.name} has not taken 2 cards`
       );

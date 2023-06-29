@@ -28,8 +28,8 @@ class ConcreteGame {
         this.id = ConcreteGame.nextId++;
         this.state = "setting-up";
         this.difficulty = "normal";
-        this.diseaseManager = new Disease_1.DiseaseManager();
         this.cities = City_1.CityNetwork.buildFromFile(CITY_DATA_FILE_PATH);
+        this.diseaseManager = new Disease_1.DiseaseManager(this.cities);
         this.playerCardDrawPile = Card_1.CardStack.buildFromFile(PLAYER_CARD_DATA_FILE_PATH);
         this.playerCardDiscardedPile = Card_1.CardStack.buildEmptyStack();
         this.infectionCardDrawPile = Card_1.CardStack.buildFromFile(INFECTION_CARD_DATA_FILE_PATH);

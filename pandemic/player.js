@@ -23,7 +23,8 @@ class Player {
         this.cards = [];
         this.state = "inactive";
         this.movesTakenInTurn = 0;
-        this.cardsDrawnInTurn = 0;
+        this.playerCardsDrawnInTurn = 0;
+        this.hasDrawnInfectionCards = false;
         this.location = this.game.cities.getCityByName(location);
     }
     isPlayerAtDifferentCity(city) {
@@ -74,8 +75,8 @@ class Player {
     }
     drawCards(n = 1) {
         this.checkValidNumberOfCards();
-        if (this.cardsDrawnInTurn + n > 2 && this.state === "active") {
-            throw new Error(`Cannot draw ${n} cards. Only ${2 - this.cardsDrawnInTurn} draws left`);
+        if (this.playerCardsDrawnInTurn + n > 2 && this.state === "active") {
+            throw new Error(`Cannot draw ${n} cards. Only ${2 - this.playerCardsDrawnInTurn} draws left`);
         }
         if (this.game.playerCardDrawPile.contents.length < n) {
             // GAME OVER - what do here?
@@ -100,21 +101,19 @@ class Player {
                 this.game.infectionCardDiscardedPile.clear();
             }
         }
-        this.cardsDrawnInTurn += n;
+        this.playerCardsDrawnInTurn += n;
+        return this;
     }
     startTurn() {
         if (this !== this.game.currentActivePlayer) {
             throw new Error(`Cannot start turn for player: ${this.name}. It is not their turn`);
         }
-        this.cardsDrawnInTurn = 0;
+        this.playerCardsDrawnInTurn = 0;
         this.movesTakenInTurn = 0;
         return this;
     }
     endTurn() {
-        this.checkValidNumberOfCards();
-        if (this === this.game.currentActivePlayer) {
-            throw new Error(`Cannot end turn for player: ${this.name}. It is still their`);
-        }
+        // notify game that this players turn is over?
         this.state = "inactive";
         return this;
     }
@@ -258,6 +257,20 @@ class Player {
         this.movesTakenInTurn++;
         return this;
     }
+    drawInfectionCards() {
+        if (this.hasDrawnInfectionCards) {
+            throw new Error(`Cannot draw infection cards. ${this.name} has already taken cards`);
+        }
+        const infectionCards = this.game.infectionCardDrawPile.take(this.game.diseaseManager.infectionRate);
+        for (const card of infectionCards) {
+            const { city: cityName, diseaseType } = card;
+            const city = this.game.cities.getCityByName(cityName);
+            this.game.diseaseManager.infect(city, diseaseType);
+            this.game.infectionCardDiscardedPile.put(card);
+            this.hasDrawnInfectionCards = true;
+        }
+        return this;
+    }
     finishActionStage() {
         if (this.isActionable) {
             throw new Error(`Cannot finish action stage. ${this.name} has ${Player.MAX_ACTIONS_PER_TURN - this.movesTakenInTurn} moves left`);
@@ -265,7 +278,7 @@ class Player {
         return this;
     }
     finishDrawStage() {
-        if (this.cardsDrawnInTurn < 2) {
+        if (this.playerCardsDrawnInTurn < 2) {
             throw new Error(`Cannot finish draw stage. ${this.name} has not taken 2 cards`);
         }
         return this;

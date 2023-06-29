@@ -1,4 +1,4 @@
-import { City } from "./City";
+import { City, CityNetwork } from "./City";
 
 export type ReadonlyDiseaseManager = Readonly<
   Omit<
@@ -8,7 +8,7 @@ export type ReadonlyDiseaseManager = Readonly<
     | "cureDisease"
     | "eradicateDisease"
     | "infect"
-    | "outbreak"
+    | "outbreakAt"
     | "epidemicAt"
   >
 >;
@@ -29,6 +29,10 @@ export class DiseaseManager {
     ["blue", 0],
     ["black", 0],
   ]);
+
+  private outbreakedCities = new Set<City>();
+
+  constructor(private readonly cityNetwork: CityNetwork) {}
 
   outbreaks = 0;
   infectionRate = 0;
@@ -104,15 +108,28 @@ export class DiseaseManager {
     this.setStateOf(diseaseType, "cured");
   }
 
-  outbreak(): void {}
+  outbreakAt(city: City, diseaseType: DiseaseType): void {
+    const neighbours = this.cityNetwork.getNeighbouringCities(city);
+    this.outbreakedCities.add(city);
+    for (const neighbour of neighbours) {
+      this.infect(neighbour, diseaseType, 1);
+    }
+    this.outbreakedCities.clear();
+    this.outbreaks++;
+  }
 
   infect(city: City, diseaseType: DiseaseType, count = 1): void {
+    if (this.stateOf(diseaseType) === "eradicated") {
+      return;
+    }
     city.diseases.add(diseaseType);
     let newCityDiseaseCubeCount =
       (city.diseaseCubeCount.get(diseaseType) ?? 0) + count;
     if (newCityDiseaseCubeCount > 3) {
       newCityDiseaseCubeCount = 3;
-      this.outbreak();
+      if (!this.outbreakedCities.has(city)) {
+        this.outbreakAt(city, diseaseType);
+      }
     }
     city.diseaseCubeCount.set(diseaseType, newCityDiseaseCubeCount);
     this.internalGlobalDiseaseCubeCounts.set(
