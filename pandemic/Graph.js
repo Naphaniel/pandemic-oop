@@ -13,25 +13,24 @@ class Graph {
         const jsonData = fs_1.default.readFileSync(path, "utf-8");
         const data = JSON.parse(jsonData);
         const graph = new Graph();
-        const { vertices, edges } = data;
-        graph.addVertex(...vertices);
-        for (const edge of edges) {
+        graph.addVertex(...data.vertices);
+        for (const edge of data.edges) {
             graph.addEdge(edge.from, edge.to);
         }
         return graph;
     }
     get vertices() {
-        return Array.from(this.adjacencyList.keys());
+        return [...this.adjacencyList.keys()];
     }
-    addVertex(...args) {
-        for (const vertex of args) {
+    addVertex(...vertices) {
+        for (const vertex of vertices) {
             if (!this.adjacencyList.has(vertex)) {
                 this.adjacencyList.set(vertex, []);
             }
         }
     }
-    removeVertex(...args) {
-        for (const vertex of args) {
+    removeVertex(...vertices) {
+        for (const vertex of vertices) {
             const neighbours = this.getNeighbours(vertex);
             for (const neighbour of neighbours) {
                 const neighbourNeighbours = this.getNeighbours(neighbour);
@@ -65,13 +64,7 @@ class Graph {
         }
     }
     findVerticesWith(key, value) {
-        let result = [];
-        for (const vertex of this.vertices) {
-            if (vertex[key] === value) {
-                result.push(vertex);
-            }
-        }
-        return result;
+        return this.vertices.filter((vertex) => vertex[key] === value);
     }
     areNeighbours(vertex1, vertex2) {
         const neighbours = this.getNeighbours(vertex1);
@@ -91,9 +84,7 @@ class Graph {
         return result;
     }
     *[Symbol.iterator]() {
-        for (const vertex of this.adjacencyList.keys()) {
-            yield vertex;
-        }
+        yield* this.adjacencyList.keys();
     }
 }
 exports.Graph = Graph;

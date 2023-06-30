@@ -18,18 +18,22 @@ class CardStack {
         return new CardStack();
     }
     static buildFromExistingStack(stack) {
-        return new CardStack(stack);
+        return new CardStack().withStack(stack);
     }
     static merge(cardStacks) {
         const stacks = cardStacks.map((cardStack) => cardStack.stack);
         const mergedStack = Stack_1.Stack.mergeStacks(stacks);
         return CardStack.buildFromExistingStack(mergedStack);
     }
-    get contents() {
-        return Array.from(this.stack);
-    }
     constructor(stack = new Stack_1.Stack()) {
         this.stack = stack;
+    }
+    get contents() {
+        return [...this.stack];
+    }
+    withStack(stack) {
+        this.stack = stack;
+        return this;
     }
     put(card) {
         this.stack.push(card);
@@ -41,26 +45,16 @@ class CardStack {
         return Stack_1.Stack.splitStacks(this.stack, n).map((stack) => CardStack.buildFromExistingStack(stack));
     }
     take(n = 1) {
-        if (n < 0) {
+        if (n <= 0) {
             return [];
         }
-        const cards = [];
-        for (let i = 0; i < n; i++) {
-            const card = this.stack.pop();
-            if (card === undefined) {
-                return cards;
-            }
-            cards.push(card);
-        }
-        return cards;
+        return this.stack.popMultiple(n);
     }
     clear() {
         this.stack.clear();
     }
     *[Symbol.iterator]() {
-        for (const card of this.stack) {
-            yield card;
-        }
+        yield* this.stack;
     }
 }
 exports.CardStack = CardStack;

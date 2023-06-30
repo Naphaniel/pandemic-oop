@@ -2,8 +2,13 @@ import fs from "fs";
 import { Stack } from "./Stack";
 import { CityName } from "./City";
 import { DiseaseType } from "./Disease";
+import { DeepReadonly } from "./Utils";
 
 type CardType = "player" | "infection" | "epidemic";
+export type ReadonlyCardPile<T extends Card> = Pick<
+  DeepReadonly<CardStack<T>>,
+  "contents"
+>;
 
 interface Card {
   readonly id: string;
@@ -40,7 +45,7 @@ export class CardStack<T extends Card> {
   }
 
   static buildFromExistingStack<T extends Card>(stack: Stack<T>): CardStack<T> {
-    return new CardStack<T>(stack);
+    return new CardStack<T>().withStack(stack);
   }
 
   static merge<T extends Card>(cardStacks: CardStack<T>[]): CardStack<T> {
@@ -49,11 +54,16 @@ export class CardStack<T extends Card> {
     return CardStack.buildFromExistingStack(mergedStack);
   }
 
+  private constructor(private stack = new Stack<T>()) {}
+
   get contents(): readonly T[] {
-    return Array.from(this.stack);
+    return [...this.stack];
   }
 
-  private constructor(private readonly stack = new Stack<T>()) {}
+  withStack(stack: Stack<T>): this {
+    this.stack = stack;
+    return this;
+  }
 
   put(card: T): void {
     this.stack.push(card);
@@ -70,18 +80,10 @@ export class CardStack<T extends Card> {
   }
 
   take(n: number = 1): T[] {
-    if (n < 0) {
+    if (n <= 0) {
       return [];
     }
-    const cards: T[] = [];
-    for (let i = 0; i < n; i++) {
-      const card = this.stack.pop();
-      if (card === undefined) {
-        return cards;
-      }
-      cards.push(card);
-    }
-    return cards;
+    return this.stack.popMultiple(n);
   }
 
   clear(): void {
@@ -89,8 +91,6 @@ export class CardStack<T extends Card> {
   }
 
   *[Symbol.iterator](): IterableIterator<T> {
-    for (const card of this.stack) {
-      yield card;
-    }
+    yield* this.stack;
   }
 }

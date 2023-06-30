@@ -1,7 +1,6 @@
 import { Game } from "./pandemic";
 
 const game = Game.initialise()
-  .removePlayer("")
   .withPlayer("nathan")
   .withPlayer("jake")
   .withPlayer("blod")
@@ -10,9 +9,10 @@ const game = Game.initialise()
 
 const [player1, player2, player3] = game.players;
 
+const city = game.cityNetwork.getCityByName("london");
 player1
   .startTurn()
-  .pass()
+  .driveTo(city)
   .pass()
   .pass()
   .pass()

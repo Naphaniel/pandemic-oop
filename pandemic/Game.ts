@@ -1,5 +1,5 @@
 import path from "path";
-import { CityNetwork } from "./City";
+import { CityNetwork, ReadonlyCityNetwork } from "./City";
 import {
   Player,
   Role,
@@ -8,7 +8,13 @@ import {
   BasicPlayer,
   PlayerObserver,
 } from "./Player";
-import { PlayerCard, InfectionCard, CardStack, EpidemicCard } from "./Card";
+import {
+  PlayerCard,
+  InfectionCard,
+  CardStack,
+  EpidemicCard,
+  ReadonlyCardPile,
+} from "./Card";
 import {
   DiseaseManager,
   DiseaseObserver,
@@ -29,7 +35,7 @@ const EPIDEMIC_CARD_DATA_FILE_PATH = path.resolve(
   "data/epidemicCards.json"
 );
 
-type State = "setting-up" | "in-progress" | "lost" | "won";
+type State = "setting-up" | "in-progress" | "lost" | "won" | "abandoned";
 type Difficulty = "introduction" | "normal" | "heroic";
 
 interface SetupGame {
@@ -37,68 +43,39 @@ interface SetupGame {
   readonly diseaseManager: ReadonlyDiseaseManager;
   readonly difficulty: Difficulty;
   readonly playingOrder: readonly string[];
-  readonly playerCardDrawPile: Pick<
-    CardStack<PlayerCard | EpidemicCard>,
-    "contents"
-  >;
-  readonly playerCardDiscardedPile: Pick<
-    CardStack<PlayerCard | EpidemicCard>,
-    "contents"
-  >;
-  readonly infectionCardDrawPile: Pick<CardStack<InfectionCard>, "contents">;
-  readonly infectionCardDiscardedPile: Pick<
-    CardStack<InfectionCard>,
-    "contents"
-  >;
-  get players(): readonly InactivePlayer[];
-  get researchStationsPlaced(): number;
+  readonly playerCardDrawPile: ReadonlyCardPile<PlayerCard | EpidemicCard>;
+  readonly playerCardDiscardedPile: ReadonlyCardPile<PlayerCard | EpidemicCard>;
+  readonly infectionCardDrawPile: ReadonlyCardPile<InfectionCard>;
+  readonly infectionCardDiscardedPile: ReadonlyCardPile<InfectionCard>;
+  readonly players: readonly InactivePlayer[];
+  readonly cityNetwork: ReadonlyCityNetwork;
   player(name: string): ActivePlayer | InactivePlayer;
 }
 
-const setupGameProps: readonly (keyof SetupGame)[] = [
-  "state",
-  "difficulty",
-  "playingOrder",
-] as const;
-
 interface GameSettingUp {
-  removePlayer(name: string): this;
-  start(): GameInProgress;
   withPlayer(name: string): this & {
     player(name: string): BasicPlayer;
     get players(): readonly BasicPlayer[];
   };
+  removePlayer(name: string): this;
   withPlayingOrder(
     names: string[]
   ): this & { readonly playingOrder: readonly string[] };
   withDifficulty(
     difficulty: Difficulty
   ): this & { readonly difficulty: Difficulty };
+  start(): GameInProgress;
 }
 
 interface GameInProgress extends SetupGame {
-  complete(outcome: "lost" | "won"): GameCompleted;
+  complete(outcome: "abandoned"): GameCompleted;
 }
 
 interface GameCompleted {
   readonly state: State;
 }
 
-export interface PlayerAccessibleGame {
-  playerCardDrawPile: CardStack<PlayerCard | EpidemicCard>;
-  playerCardDiscardedPile: CardStack<PlayerCard | EpidemicCard>;
-  infectionCardDrawPile: CardStack<InfectionCard>;
-  infectionCardDiscardedPile: CardStack<InfectionCard>;
-  readonly cities: CityNetwork;
-  readonly diseaseManager: DiseaseManager;
-  get researchStationsPlaced(): number;
-}
-
-export type Game =
-  | GameSettingUp
-  | GameInProgress
-  | GameCompleted
-  | PlayerAccessibleGame;
+export type Game = GameSettingUp | GameInProgress | GameCompleted;
 
 export const Game = {
   initialise(): GameSettingUp {
@@ -107,41 +84,59 @@ export const Game = {
 };
 
 class ConcreteGame implements PlayerObserver, DiseaseObserver {
+  private static nextId: number = 0;
+
+  id: number;
+  state: State;
+  difficulty: Difficulty;
+  cityNetwork: CityNetwork;
+  diseaseManager: DiseaseManager;
+  playerCardDrawPile: CardStack<PlayerCard | EpidemicCard>;
+  playerCardDiscardedPile: CardStack<PlayerCard | EpidemicCard>;
+  infectionCardDrawPile: CardStack<InfectionCard>;
+  infectionCardDiscardedPile: CardStack<InfectionCard>;
+  epidemicCardPile: CardStack<EpidemicCard>;
+  availableRoles: Role[];
+  internalPlayers: Map<string, Player>;
+  playingOrder: string[];
+  currentPlayerIndex: number;
+
+  private constructor() {
+    this.id = ConcreteGame.nextId++;
+    this.state = "setting-up";
+    this.difficulty = "normal";
+    this.cityNetwork = CityNetwork.buildFromFile(CITY_DATA_FILE_PATH);
+    this.diseaseManager = new DiseaseManager(this.cityNetwork);
+    this.playerCardDrawPile = CardStack.buildFromFile<
+      PlayerCard | EpidemicCard
+    >(PLAYER_CARD_DATA_FILE_PATH);
+    this.playerCardDiscardedPile = CardStack.buildEmptyStack<PlayerCard>();
+    this.infectionCardDrawPile = CardStack.buildFromFile<InfectionCard>(
+      INFECTION_CARD_DATA_FILE_PATH
+    );
+    this.infectionCardDiscardedPile =
+      CardStack.buildEmptyStack<InfectionCard>();
+    this.epidemicCardPile = CardStack.buildFromFile<EpidemicCard>(
+      EPIDEMIC_CARD_DATA_FILE_PATH
+    );
+    this.availableRoles = [
+      "medic",
+      "scientist",
+      "dispatcher",
+      "researcher",
+      "operations-expert",
+    ];
+    this.internalPlayers = new Map<string, Player>();
+    this.playingOrder = [];
+    this.currentPlayerIndex = 0;
+  }
+
   public static initialise(): GameSettingUp {
     return new ConcreteGame();
   }
 
-  static nextId: number = 0;
-
-  id = ConcreteGame.nextId++;
-  state: State = "setting-up";
-  difficulty: Difficulty = "normal";
-  cities = CityNetwork.buildFromFile(CITY_DATA_FILE_PATH);
-  diseaseManager = new DiseaseManager(this.cities);
-  playerCardDrawPile = CardStack.buildFromFile<PlayerCard | EpidemicCard>(
-    PLAYER_CARD_DATA_FILE_PATH
-  );
-  playerCardDiscardedPile = CardStack.buildEmptyStack<PlayerCard>();
-  infectionCardDrawPile = CardStack.buildFromFile<InfectionCard>(
-    INFECTION_CARD_DATA_FILE_PATH
-  );
-  infectionCardDiscardedPile = CardStack.buildEmptyStack<InfectionCard>();
-  epidemicCardPile = CardStack.buildFromFile<EpidemicCard>(
-    EPIDEMIC_CARD_DATA_FILE_PATH
-  );
-  availableRoles: Role[] = [
-    "medic",
-    "scientist",
-    "dispatcher",
-    "researcher",
-    "operations-expert",
-  ];
-  internalPlayers = new Map<string, Player>();
-  playingOrder: string[] = [];
-  currentPlayerIndex = 0;
-
   get researchStationsPlaced(): number {
-    return this.cities.researchStations.length;
+    return this.cityNetwork.researchStations.length;
   }
 
   get players(): readonly InactivePlayer[] {
@@ -167,12 +162,14 @@ class ConcreteGame implements PlayerObserver, DiseaseObserver {
     if (this.playerCount >= 4) {
       throw new Error("Cannot add player. Can only have 4 players");
     }
-    const player = new Player(
-      this as PlayerAccessibleGame,
-      name,
-      this.assignRandomRole(),
-      "atalanta"
-    );
+    const player = new Player(name, this.assignRandomRole(), "atalanta", {
+      cityNetwork: this.cityNetwork,
+      diseaseManager: this.diseaseManager,
+      playerCardDiscardedPile: this.playerCardDiscardedPile,
+      playerCardDrawPile: this.playerCardDrawPile,
+      infectionCardDiscardedPile: this.infectionCardDiscardedPile,
+      infectionCardDrawPile: this.infectionCardDrawPile,
+    });
     player.registerObserver(this);
     this.internalPlayers.set(name, player);
     return this;
@@ -215,6 +212,11 @@ class ConcreteGame implements PlayerObserver, DiseaseObserver {
   }
 
   validateGameState(): void {
+    const setupGameProps: (keyof SetupGame)[] = [
+      "state",
+      "difficulty",
+      "playingOrder",
+    ];
     for (const prop of setupGameProps) {
       if (this[prop] === undefined) {
         throw new Error(`Cannot start game. Missing property ${prop}`);
@@ -259,7 +261,7 @@ class ConcreteGame implements PlayerObserver, DiseaseObserver {
     for (let i = 3; i > 0; i--) {
       for (const infectionCard of this.infectionCardDrawPile.take(3)) {
         const { city: cityName, diseaseType } = infectionCard;
-        const city = this.cities.getCityByName(cityName);
+        const city = this.cityNetwork.getCityByName(cityName);
         this.diseaseManager.infect(city, diseaseType, i);
       }
     }
@@ -279,7 +281,7 @@ class ConcreteGame implements PlayerObserver, DiseaseObserver {
     }
     this.setupCards();
     this.nextPlayerTurn();
-    this.cities.getCityByName("atalanta").buildResearchStation();
+    this.cityNetwork.getCityByName("atalanta").hasResearchStation = true;
     this.state = "in-progress";
     return this;
   }
@@ -326,7 +328,7 @@ class ConcreteGame implements PlayerObserver, DiseaseObserver {
     this.complete("lost");
   }
 
-  complete(outcome: "lost" | "won"): GameCompleted {
+  complete(outcome: "lost" | "won" | "abandoned"): GameCompleted {
     for (const player of this.internalPlayers.values()) {
       player.state = "inactive";
     }

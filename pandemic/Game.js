@@ -13,11 +13,6 @@ const CITY_DATA_FILE_PATH = path_1.default.resolve(__dirname, "data/cities.json"
 const PLAYER_CARD_DATA_FILE_PATH = path_1.default.resolve(__dirname, "data/playerCards.json");
 const INFECTION_CARD_DATA_FILE_PATH = path_1.default.resolve(__dirname, "data/infectionCards.json");
 const EPIDEMIC_CARD_DATA_FILE_PATH = path_1.default.resolve(__dirname, "data/epidemicCards.json");
-const setupGameProps = [
-    "state",
-    "difficulty",
-    "playingOrder",
-];
 exports.Game = {
     initialise() {
         return ConcreteGame.initialise();
@@ -28,12 +23,13 @@ class ConcreteGame {
         this.id = ConcreteGame.nextId++;
         this.state = "setting-up";
         this.difficulty = "normal";
-        this.cities = City_1.CityNetwork.buildFromFile(CITY_DATA_FILE_PATH);
-        this.diseaseManager = new Disease_1.DiseaseManager(this.cities);
+        this.cityNetwork = City_1.CityNetwork.buildFromFile(CITY_DATA_FILE_PATH);
+        this.diseaseManager = new Disease_1.DiseaseManager(this.cityNetwork);
         this.playerCardDrawPile = Card_1.CardStack.buildFromFile(PLAYER_CARD_DATA_FILE_PATH);
         this.playerCardDiscardedPile = Card_1.CardStack.buildEmptyStack();
         this.infectionCardDrawPile = Card_1.CardStack.buildFromFile(INFECTION_CARD_DATA_FILE_PATH);
-        this.infectionCardDiscardedPile = Card_1.CardStack.buildEmptyStack();
+        this.infectionCardDiscardedPile =
+            Card_1.CardStack.buildEmptyStack();
         this.epidemicCardPile = Card_1.CardStack.buildFromFile(EPIDEMIC_CARD_DATA_FILE_PATH);
         this.availableRoles = [
             "medic",
@@ -50,7 +46,7 @@ class ConcreteGame {
         return new ConcreteGame();
     }
     get researchStationsPlaced() {
-        return this.cities.researchStations.length;
+        return this.cityNetwork.researchStations.length;
     }
     get players() {
         return Array.from(this.internalPlayers.values());
@@ -69,7 +65,14 @@ class ConcreteGame {
         if (this.playerCount >= 4) {
             throw new Error("Cannot add player. Can only have 4 players");
         }
-        const player = new Player_1.Player(this, name, this.assignRandomRole(), "atalanta");
+        const player = new Player_1.Player(name, this.assignRandomRole(), "atalanta", {
+            cityNetwork: this.cityNetwork,
+            diseaseManager: this.diseaseManager,
+            playerCardDiscardedPile: this.playerCardDiscardedPile,
+            playerCardDrawPile: this.playerCardDrawPile,
+            infectionCardDiscardedPile: this.infectionCardDiscardedPile,
+            infectionCardDrawPile: this.infectionCardDrawPile,
+        });
         player.registerObserver(this);
         this.internalPlayers.set(name, player);
         return this;
@@ -100,6 +103,11 @@ class ConcreteGame {
         return this;
     }
     validateGameState() {
+        const setupGameProps = [
+            "state",
+            "difficulty",
+            "playingOrder",
+        ];
         for (const prop of setupGameProps) {
             if (this[prop] === undefined) {
                 throw new Error(`Cannot start game. Missing property ${prop}`);
@@ -135,7 +143,7 @@ class ConcreteGame {
         for (let i = 3; i > 0; i--) {
             for (const infectionCard of this.infectionCardDrawPile.take(3)) {
                 const { city: cityName, diseaseType } = infectionCard;
-                const city = this.cities.getCityByName(cityName);
+                const city = this.cityNetwork.getCityByName(cityName);
                 this.diseaseManager.infect(city, diseaseType, i);
             }
         }
@@ -153,7 +161,7 @@ class ConcreteGame {
         }
         this.setupCards();
         this.nextPlayerTurn();
-        this.cities.getCityByName("atalanta").buildResearchStation();
+        this.cityNetwork.getCityByName("atalanta").hasResearchStation = true;
         this.state = "in-progress";
         return this;
     }

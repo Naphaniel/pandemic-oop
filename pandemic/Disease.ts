@@ -1,17 +1,17 @@
 import { City, CityNetwork } from "./City";
+import { DeepReadonly } from "./Utils";
 
-export type ReadonlyDiseaseManager = Readonly<
-  Omit<
-    DiseaseManager,
-    | "treatDiseaseAt"
-    | "cureDisease"
-    | "infect"
-    | "epidemicAt"
-    | "registerObserver"
-    | "removeObserver"
-  >
->;
 export type DiseaseType = "red" | "yellow" | "blue" | "black";
+export type ReadonlyDiseaseManager = Omit<
+  DeepReadonly<DiseaseManager>,
+  | "registerObserver"
+  | "removeObserver"
+  | "epidemicAt"
+  | "treatDiseaseAt"
+  | "cureDisease"
+  | "infect"
+>;
+
 type DiseaseState = "uncured" | "cured" | "eradicated";
 
 export interface DiseaseObserver {
@@ -21,71 +21,67 @@ export interface DiseaseObserver {
 }
 
 export class DiseaseManager {
-  private static NUM_DISEASE_CUBES_COLOUR = 24;
+  private static readonly NUM_DISEASE_CUBES_COLOUR = 24;
 
-  private internalGlobalDiseaseStates = new Map<DiseaseType, DiseaseState>([
-    ["red", "uncured"],
-    ["yellow", "uncured"],
-    ["blue", "uncured"],
-    ["black", "uncured"],
-  ]);
-  private internalGlobalDiseaseCubeCounts = new Map<DiseaseType, number>([
-    ["red", 0],
-    ["yellow", 0],
-    ["blue", 0],
-    ["black", 0],
-  ]);
-  private observers: DiseaseObserver[] = [];
-  private outbreakedCities = new Set<City>();
-  private readonly infectionRateSequence = [2, 2, 2, 3, 3, 4, 4] as const;
-  private infectionRateStep = 0;
+  private readonly globalDiseaseStates: Map<DiseaseType, DiseaseState>;
+  private readonly globalDiseaseCubeCounts: Map<DiseaseType, number>;
+  private readonly observers: DiseaseObserver[];
+  private readonly outbreakedCities: Set<City>;
+  private readonly infectionRateSequence: readonly number[];
+  private infectionRateStep: number;
+  outbreaks: number;
 
-  outbreaks = 0;
+  constructor(private readonly cityNetwork: CityNetwork) {
+    this.globalDiseaseStates = new Map<DiseaseType, DiseaseState>();
+    this.globalDiseaseCubeCounts = new Map<DiseaseType, number>();
+    this.observers = [];
+    this.outbreakedCities = new Set<City>();
+    this.infectionRateSequence = [2, 2, 2, 3, 3, 4, 4];
+    this.infectionRateStep = 0;
+    this.outbreaks = 0;
+    this.initializeGlobalDiseaseStates();
+    this.initializeGlobalDiseaseCubeCounts();
+  }
 
-  get infectionRate() {
+  get infectionRate(): number {
     return this.infectionRateSequence[this.infectionRateStep];
   }
 
-  constructor(private readonly cityNetwork: CityNetwork) {}
-
-  get globalDiseaseStates(): ReadonlyMap<DiseaseType, DiseaseState> {
-    return this.internalGlobalDiseaseStates;
+  private initializeGlobalDiseaseStates(): void {
+    const diseaseTypes: DiseaseType[] = ["red", "yellow", "blue", "black"];
+    for (const diseaseType of diseaseTypes) {
+      this.globalDiseaseStates.set(diseaseType, "uncured");
+    }
   }
 
-  get globalDiseaseCubeCounts(): ReadonlyMap<DiseaseType, number> {
-    return this.internalGlobalDiseaseCubeCounts;
+  private initializeGlobalDiseaseCubeCounts(): void {
+    const diseaseTypes: DiseaseType[] = ["red", "yellow", "blue", "black"];
+    for (const diseaseType of diseaseTypes) {
+      this.globalDiseaseCubeCounts.set(diseaseType, 0);
+    }
   }
 
-  private get areAllDiseasesCured(): boolean {
-    return !(
-      this.stateOf("red") === "uncured" ||
-      this.stateOf("blue") === "uncured" ||
-      this.stateOf("black") === "uncured" ||
-      this.stateOf("yellow") === "uncured"
-    );
+  getGlobalDiseaseStates(): ReadonlyMap<DiseaseType, DiseaseState> {
+    return new Map(this.globalDiseaseStates);
+  }
+
+  getGlobalDiseaseCubeCounts(): ReadonlyMap<DiseaseType, number> {
+    return new Map(this.globalDiseaseCubeCounts);
+  }
+
+  private areAllDiseasesCured(): boolean {
+    for (const state of this.globalDiseaseStates.values()) {
+      if (state === "uncured") {
+        return false;
+      }
+    }
+    return true;
   }
 
   private eradicateDisease(diseaseType: DiseaseType): void {
-    this.setStateOf(diseaseType, "eradicated");
-    if (this.areAllDiseasesCured) {
+    this.globalDiseaseStates.set(diseaseType, "eradicated");
+    if (this.areAllDiseasesCured()) {
       this.notifyAllCuresCured();
-    }
-  }
-
-  private setStateOf(diseaseType: DiseaseType, state: DiseaseState): void {
-    this.internalGlobalDiseaseStates.set(diseaseType, state);
-  }
-
-  private outbreakAt(city: City, diseaseType: DiseaseType): void {
-    const neighbours = this.cityNetwork.getNeighbouringCities(city);
-    this.outbreakedCities.add(city);
-    for (const neighbour of neighbours) {
-      this.infect(neighbour, diseaseType, 1);
-    }
-    this.outbreakedCities.clear();
-    this.outbreaks++;
-    if (this.outbreaks === 8) {
-      this.notifyEightOutbreaks();
     }
   }
 
@@ -118,22 +114,22 @@ export class DiseaseManager {
     }
   }
 
-  globalDisaseCubeCountOf(diseaseType: DiseaseType): number {
-    return this.globalDiseaseCubeCounts.get(diseaseType) ?? 0;
+  private getGlobalDiseaseCubeCountOf(diseaseType: DiseaseType): number {
+    return this.globalDiseaseCubeCounts.get(diseaseType) || 0;
   }
 
-  globalDiseaseCubesLeftFor(diseaseType: DiseaseType): number {
+  private getGlobalDiseaseCubesLeftFor(diseaseType: DiseaseType): number {
     return (
       DiseaseManager.NUM_DISEASE_CUBES_COLOUR -
-      this.globalDisaseCubeCountOf(diseaseType)
+      this.getGlobalDiseaseCubeCountOf(diseaseType)
     );
   }
 
-  stateOf(diseaseType: DiseaseType): DiseaseState {
-    return this.internalGlobalDiseaseStates.get(diseaseType) ?? "uncured";
+  getStateOf(diseaseType: DiseaseType): DiseaseState {
+    return this.globalDiseaseStates.get(diseaseType) || "uncured";
   }
 
-  epidemicAt(city: City, diseaseType: DiseaseType, count: number) {
+  epidemicAt(city: City, diseaseType: DiseaseType, count: number): void {
     this.infectionRateStep = Math.min(
       this.infectionRateStep + 1,
       this.infectionRateSequence.length - 1
@@ -145,67 +141,93 @@ export class DiseaseManager {
     if (!city.isInfected) {
       throw new Error(`Cannot treat disease. ${city.name} is not infected`);
     }
-    const diseaseCubeCount = city.diseaseCubeCount.get(diseaseType) ?? 0;
-    const diseaseState = this.stateOf(diseaseType);
+
+    const diseaseCubeCount = city.diseaseCubeCount.get(diseaseType) || 0;
+    const diseaseState = this.getStateOf(diseaseType);
+
     switch (diseaseState) {
       case "eradicated":
-        if (diseaseState === "eradicated") {
-          throw new Error(
-            `Cannot treat disease. ${diseaseType} is already eradiacted.`
-          );
-        }
+        throw new Error(
+          `Cannot treat disease. ${diseaseType} is already eradiacted.`
+        );
       case "cured":
         city.diseaseCubeCount.set(diseaseType, 0);
-        this.internalGlobalDiseaseCubeCounts.set(
+        this.globalDiseaseCubeCounts.set(
           diseaseType,
-          this.globalDisaseCubeCountOf(diseaseType) - diseaseCubeCount
+          this.getGlobalDiseaseCubeCountOf(diseaseType) - diseaseCubeCount
         );
       case "uncured":
         city.diseaseCubeCount.set(diseaseType, diseaseCubeCount - count);
-        this.internalGlobalDiseaseCubeCounts.set(
+        this.globalDiseaseCubeCounts.set(
           diseaseType,
-          this.globalDisaseCubeCountOf(diseaseType) - count
+          this.getGlobalDiseaseCubeCountOf(diseaseType) - count
         );
       default:
     }
+
     if (city.diseaseCubeCount.get(diseaseType) === 0) {
       city.diseases.delete(diseaseType);
     }
-    if (this.globalDisaseCubeCountOf(diseaseType) === 0) {
+
+    if (this.getGlobalDiseaseCubeCountOf(diseaseType) === 0) {
       this.eradicateDisease(diseaseType);
     }
   }
 
   cureDisease(diseaseType: DiseaseType): void {
-    if (!(this.stateOf(diseaseType) === "uncured")) {
+    if (this.getStateOf(diseaseType) !== "uncured") {
       throw new Error(`Cannot cure disease. ${diseaseType} is already cured.`);
     }
-    this.setStateOf(diseaseType, "cured");
-    if (this.areAllDiseasesCured) {
+
+    this.globalDiseaseStates.set(diseaseType, "cured");
+
+    if (this.areAllDiseasesCured()) {
       this.notifyAllCuresCured();
     }
   }
 
   infect(city: City, diseaseType: DiseaseType, count = 1): void {
-    if (this.stateOf(diseaseType) === "eradicated") {
+    if (this.getStateOf(diseaseType) === "eradicated") {
       return;
     }
-    if (this.globalDiseaseCubesLeftFor(diseaseType) < 0) {
+
+    if (this.getGlobalDiseaseCubesLeftFor(diseaseType) < 0) {
       this.notifyNoDiseaseCubes();
     }
+
     city.diseases.add(diseaseType);
+
     let newCityDiseaseCubeCount =
-      (city.diseaseCubeCount.get(diseaseType) ?? 0) + count;
+      (city.diseaseCubeCount.get(diseaseType) || 0) + count;
+
     if (newCityDiseaseCubeCount > 3) {
       newCityDiseaseCubeCount = 3;
+
       if (!this.outbreakedCities.has(city)) {
         this.outbreakAt(city, diseaseType);
       }
     }
+
     city.diseaseCubeCount.set(diseaseType, newCityDiseaseCubeCount);
-    this.internalGlobalDiseaseCubeCounts.set(
+    this.globalDiseaseCubeCounts.set(
       diseaseType,
-      this.globalDisaseCubeCountOf(diseaseType) + count
+      this.getGlobalDiseaseCubeCountOf(diseaseType) + count
     );
+  }
+
+  private outbreakAt(city: City, diseaseType: DiseaseType): void {
+    const neighbours = this.cityNetwork.getNeighbouringCities(city);
+    this.outbreakedCities.add(city);
+
+    for (const neighbour of neighbours) {
+      this.infect(neighbour, diseaseType, 1);
+    }
+
+    this.outbreakedCities.clear();
+    this.outbreaks++;
+
+    if (this.outbreaks === 8) {
+      this.notifyEightOutbreaks();
+    }
   }
 }

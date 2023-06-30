@@ -13,7 +13,8 @@ class Stack {
         const stacks = [];
         for (let i = 0; i < stack.size; i += stackSize) {
             const newStack = new Stack();
-            for (let j = i; j < i + stackSize && j < stack.size; j++) {
+            const end = Math.min(i + stackSize, stack.size);
+            for (let j = i; j < end; j++) {
                 newStack.push(stack.items[j]);
             }
             stacks.push(newStack);
@@ -49,6 +50,9 @@ class Stack {
     pop() {
         return this.items.pop();
     }
+    popMultiple(n) {
+        return this.items.splice(-n, n);
+    }
     clear() {
         this.items = [];
     }
@@ -62,9 +66,7 @@ class Stack {
         return this.items.toString();
     }
     *[Symbol.iterator]() {
-        for (const item of this.items) {
-            yield item;
-        }
+        yield* this.items;
     }
 }
 exports.Stack = Stack;

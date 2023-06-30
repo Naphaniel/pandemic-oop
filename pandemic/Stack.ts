@@ -5,31 +5,39 @@ export class Stack<T> {
         "Invalid number of stacks. Number of stacks should be greater than 0."
       );
     }
+
     const stackSize = Math.ceil(stack.size / n);
     const stacks: Stack<T>[] = [];
+
     for (let i = 0; i < stack.size; i += stackSize) {
       const newStack = new Stack<T>();
-      for (let j = i; j < i + stackSize && j < stack.size; j++) {
+      const end = Math.min(i + stackSize, stack.size);
+
+      for (let j = i; j < end; j++) {
         newStack.push(stack.items[j]);
       }
+
       stacks.push(newStack);
     }
+
     return stacks;
   }
 
   static mergeStacks<T>(stacks: Stack<T>[]): Stack<T> {
     const mergedStack = new Stack<T>();
+
     for (const stack of stacks) {
       while (!stack.isEmpty()) {
-        mergedStack.push(stack.pop() as T);
+        mergedStack.push(stack.pop()!);
       }
     }
+
     return mergedStack;
   }
 
   private items: T[] = [];
 
-  get size() {
+  get size(): number {
     return this.items.length;
   }
 
@@ -55,6 +63,10 @@ export class Stack<T> {
     return this.items.pop();
   }
 
+  popMultiple(n: number): T[] {
+    return this.items.splice(-n, n);
+  }
+
   clear(): void {
     this.items = [];
   }
@@ -62,7 +74,7 @@ export class Stack<T> {
   shuffle(): void {
     for (let i = this.size - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [this.items[i], this.items[j]] = [this.items[j]!, this.items[i]!];
+      [this.items[i], this.items[j]] = [this.items[j], this.items[i]];
     }
   }
 
@@ -71,8 +83,6 @@ export class Stack<T> {
   }
 
   *[Symbol.iterator](): IterableIterator<T> {
-    for (const item of this.items) {
-      yield item;
-    }
+    yield* this.items;
   }
 }

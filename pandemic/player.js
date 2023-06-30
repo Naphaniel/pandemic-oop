@@ -16,8 +16,7 @@ class Player {
     get hasTooManyCards() {
         return this.cards.length > 7;
     }
-    constructor(game, name, role, location) {
-        this.game = game;
+    constructor(name, role, location, gameConfig) {
         this.name = name;
         this.role = role;
         this.observers = [];
@@ -26,7 +25,13 @@ class Player {
         this.movesTakenInTurn = 0;
         this.playerCardsDrawnInTurn = 0;
         this.hasDrawnInfectionCards = false;
-        this.location = this.game.cities.getCityByName(location);
+        this.cityNetwork = gameConfig.cityNetwork;
+        this.diseaseManager = gameConfig.diseaseManager;
+        this.playerCardDrawPile = gameConfig.playerCardDrawPile;
+        this.playerCardDiscardedPile = gameConfig.playerCardDiscardedPile;
+        this.infectionCardDrawPile = gameConfig.infectionCardDrawPile;
+        this.infectionCardDiscardedPile = gameConfig.infectionCardDiscardedPile;
+        this.location = this.cityNetwork.getCityByName(location);
     }
     registerObserver(observer) {
         this.observers.push(observer);
@@ -61,7 +66,7 @@ class Player {
         }
         this.cards = this.cards.filter((card) => !cards.includes(card));
         for (const card of cards) {
-            this.game.playerCardDiscardedPile.put(card);
+            this.playerCardDiscardedPile.put(card);
         }
         return this;
     }
@@ -88,26 +93,26 @@ class Player {
         if (this.playerCardsDrawnInTurn + n > 2 && this.state === "active") {
             throw new Error(`Cannot draw ${n} cards. Only ${2 - this.playerCardsDrawnInTurn} draws left`);
         }
-        if (this.game.playerCardDrawPile.contents.length < n) {
+        if (this.playerCardDrawPile.contents.length < n) {
             this.notifyNoPlayerCards();
         }
-        const cardsTaken = this.game.playerCardDrawPile.take(n);
+        const cardsTaken = this.playerCardDrawPile.take(n);
         for (const card of cardsTaken) {
             if (card.type === "player") {
                 this.cards.push(card);
             }
             if (card.type === "epidemic") {
-                const [infectionCard] = this.game.infectionCardDrawPile.take();
-                const city = this.game.cities.getCityByName(infectionCard.city);
-                this.game.diseaseManager.epidemicAt(city, infectionCard.diseaseType, 3);
-                this.game.playerCardDiscardedPile.put(card);
-                this.game.infectionCardDiscardedPile.shuffle();
+                const [infectionCard] = this.infectionCardDrawPile.take();
+                const city = this.cityNetwork.getCityByName(infectionCard.city);
+                this.diseaseManager.epidemicAt(city, infectionCard.diseaseType, 3);
+                this.playerCardDiscardedPile.put(card);
+                this.infectionCardDiscardedPile.shuffle();
                 const combinedInfectionPile = Card_1.CardStack.merge([
-                    this.game.infectionCardDiscardedPile,
-                    this.game.infectionCardDrawPile,
+                    this.infectionCardDiscardedPile,
+                    this.infectionCardDrawPile,
                 ]);
-                this.game.infectionCardDrawPile = combinedInfectionPile;
-                this.game.infectionCardDiscardedPile.clear();
+                this.infectionCardDrawPile = combinedInfectionPile;
+                this.infectionCardDiscardedPile.clear();
             }
         }
         this.playerCardsDrawnInTurn += n;
@@ -148,10 +153,10 @@ class Player {
     driveTo(city) {
         this.checkValidNumberOfCards();
         this.checkValidMovement(city);
-        if (!this.game.cities.areCitiesNeighbours(this.location, city)) {
+        if (!this.cityNetwork.areCitiesNeighbours(this.location, city)) {
             throw playerDoesNotNeighbourCityError(this, city);
         }
-        const newCity = typeof city === "string" ? this.game.cities.getCityByName(city) : city;
+        const newCity = typeof city === "string" ? this.cityNetwork.getCityByName(city) : city;
         this.location = newCity;
         this.movesTakenInTurn++;
         return this;
@@ -163,7 +168,7 @@ class Player {
         if (card === undefined) {
             throw playerDoesNotHaveCardError(this, city);
         }
-        const newCity = typeof city === "string" ? this.game.cities.getCityByName(city) : city;
+        const newCity = typeof city === "string" ? this.cityNetwork.getCityByName(city) : city;
         this.location = newCity;
         this.discardCards(card);
         this.movesTakenInTurn++;
@@ -176,7 +181,7 @@ class Player {
         if (card === undefined) {
             throw playerDoesNotHaveCardError(this, city);
         }
-        const newCity = typeof city === "string" ? this.game.cities.getCityByName(city) : city;
+        const newCity = typeof city === "string" ? this.cityNetwork.getCityByName(city) : city;
         this.location = newCity;
         this.discardCards(card);
         this.movesTakenInTurn++;
@@ -185,7 +190,7 @@ class Player {
     takeShuttleFlightTo(city) {
         this.checkValidNumberOfCards();
         this.checkValidMovement(city);
-        const newCity = typeof city === "string" ? this.game.cities.getCityByName(city) : city;
+        const newCity = typeof city === "string" ? this.cityNetwork.getCityByName(city) : city;
         if (!this.location.hasResearchStation || !newCity.hasResearchStation) {
             throw playersCityDoesNotHaveResearchStationError(this, newCity.name);
         }
@@ -204,24 +209,24 @@ class Player {
                 throw playerDoesNotHaveCardError(this, this.location);
             }
         }
-        if (this.game.researchStationsPlaced > 6) {
+        if (this.cityNetwork.researchStationsPlaced > 6) {
             if (replaceCity === undefined) {
                 throw new Error(`Cannot place research station at: ${this.location.name}. ` +
                     "No research stations left to place. ");
             }
             const newCity = typeof replaceCity === "string"
-                ? this.game.cities.getCityByName(replaceCity)
+                ? this.cityNetwork.getCityByName(replaceCity)
                 : replaceCity;
             if (!newCity.hasResearchStation) {
                 throw new Error(`Cannot place research station at: ${this.location.name}. ${newCity.name}` +
                     "does not have a research station to replace");
             }
-            newCity.removeResearchStation();
+            newCity.hasResearchStation = false;
         }
         if (card !== undefined) {
             this.discardCards(card);
         }
-        this.location.buildResearchStation();
+        this.location.hasResearchStation = true;
         this.movesTakenInTurn++;
         return this;
     }
@@ -237,7 +242,7 @@ class Player {
         if (!(cards.length >= 5 || (this.role === "scientist" && cards.length >= 4))) {
             throw new Error(`Cannot cure disease. Not enough cards to cure ${diseaseType}`);
         }
-        this.game.diseaseManager.cureDisease(diseaseType);
+        this.diseaseManager.cureDisease(diseaseType);
         this.discardCards(...cards);
         this.movesTakenInTurn++;
         return this;
@@ -250,11 +255,11 @@ class Player {
         if (!this.location.isInfectedWith(diseaseType)) {
             throw new Error(`Cannot treat disease. ${this.location.name} is not infected with ${diseaseType}`);
         }
-        this.game.diseaseManager.treatDiseaseAt(this.location, diseaseType, this.role === "medic"
+        this.diseaseManager.treatDiseaseAt(this.location, diseaseType, this.role === "medic"
             ? this.location.diseaseCubeCount.get(diseaseType)
             : 1);
         if (!(this.role === "medic" &&
-            this.game.diseaseManager.stateOf(diseaseType) === "cured")) {
+            this.diseaseManager.getStateOf(diseaseType) === "cured")) {
             this.movesTakenInTurn++;
         }
         return this;
@@ -292,12 +297,12 @@ class Player {
         if (this.hasDrawnInfectionCards) {
             throw new Error(`Cannot draw infection cards. ${this.name} has already taken cards`);
         }
-        const infectionCards = this.game.infectionCardDrawPile.take(this.game.diseaseManager.infectionRate);
+        const infectionCards = this.infectionCardDrawPile.take(this.diseaseManager.infectionRate);
         for (const card of infectionCards) {
             const { city: cityName, diseaseType } = card;
-            const city = this.game.cities.getCityByName(cityName);
-            this.game.diseaseManager.infect(city, diseaseType);
-            this.game.infectionCardDiscardedPile.put(card);
+            const city = this.cityNetwork.getCityByName(cityName);
+            this.diseaseManager.infect(city, diseaseType);
+            this.infectionCardDiscardedPile.put(card);
             this.hasDrawnInfectionCards = true;
         }
         return this;

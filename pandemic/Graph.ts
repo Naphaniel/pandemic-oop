@@ -6,38 +6,33 @@ interface GraphData<T> {
 }
 
 export class Graph<T> {
+  private readonly adjacencyList = new Map<T, T[]>();
+
   static fromJSONFile<T>(path: string): Graph<T> {
     const jsonData = fs.readFileSync(path, "utf-8");
     const data: GraphData<T> = JSON.parse(jsonData);
     const graph = new Graph<T>();
-    const { vertices, edges } = data;
-    graph.addVertex(...vertices);
-    for (const edge of edges) {
+    graph.addVertex(...data.vertices);
+    for (const edge of data.edges) {
       graph.addEdge(edge.from, edge.to);
     }
     return graph;
   }
 
-  private readonly adjacencyList = new Map<T, T[]>();
-
   get vertices(): T[] {
-    return Array.from(this.adjacencyList.keys());
+    return [...this.adjacencyList.keys()];
   }
 
-  addVertex(vertex: T): void;
-  addVertex(...vertices: T[]): void;
-  addVertex(...args: T[]): void {
-    for (const vertex of args) {
+  addVertex(...vertices: T[]): void {
+    for (const vertex of vertices) {
       if (!this.adjacencyList.has(vertex)) {
         this.adjacencyList.set(vertex, []);
       }
     }
   }
 
-  removeVertex(vertex: T): void;
-  removeVertex(...vertices: T[]): void;
-  removeVertex(...args: T[]): void {
-    for (const vertex of args) {
+  removeVertex(...vertices: T[]): void {
+    for (const vertex of vertices) {
       const neighbours = this.getNeighbours(vertex);
       for (const neighbour of neighbours) {
         const neighbourNeighbours = this.getNeighbours(neighbour);
@@ -83,13 +78,7 @@ export class Graph<T> {
   }
 
   findVerticesWith<K extends keyof T>(key: K, value: T[K]): T[] {
-    let result = [];
-    for (const vertex of this.vertices) {
-      if (vertex[key] === value) {
-        result.push(vertex);
-      }
-    }
-    return result;
+    return this.vertices.filter((vertex) => vertex[key] === value);
   }
 
   areNeighbours(vertex1: T, vertex2: T): boolean {
@@ -114,8 +103,6 @@ export class Graph<T> {
   }
 
   *[Symbol.iterator](): IterableIterator<T> {
-    for (const vertex of this.adjacencyList.keys()) {
-      yield vertex;
-    }
+    yield* this.adjacencyList.keys();
   }
 }
