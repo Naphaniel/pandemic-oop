@@ -21,12 +21,6 @@ import {
   ReadonlyDiseaseManager,
 } from "./Disease";
 
-/**
- *
- *
- *
- *
- */
 const CITY_DATA_FILE_PATH = path.resolve(__dirname, "data/cities.json");
 const PLAYER_CARD_DATA_FILE_PATH = path.resolve(
   __dirname,
@@ -137,7 +131,7 @@ class ConcreteGame implements PlayerObserver, DiseaseObserver {
     this.currentPlayerIndex = 0;
   }
 
-  public static initialise(): GameSettingUp {
+  static initialise(): GameSettingUp {
     return new ConcreteGame();
   }
 

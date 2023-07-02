@@ -1,12 +1,19 @@
 /**
- *  Represents a genric stack data structure.
+ *  Represents a generic stack data structure.
  *
- *  @typeParam T - The type of items stored within the stack.
+ *  @typeParam `T` - The type of items stored within the stack.
  *
  *  @remarks
  *  This generic data structure illustrates **parametric polymorphism** through
- *  generic types. The behaviour of the Stack datastructure is the same regardles
+ *  generic types. The behaviour of the Stack datastructure is the same regardless
  *  of the data type it is storing.
+ *
+ *  Stack operations complexity:
+ *    - Access specific element O(n)
+ *    - Access top element O(1)
+ *    - Search O(n)
+ *    - Insertion of top O(1)
+ *    - Deletion of top O(n)
  *
  */
 export class Stack<T> {
@@ -35,7 +42,7 @@ export class Stack<T> {
    *
    * @returns The top item on the stack or `undefined` if the stack is empty.
    *
-   * @Remarks
+   * @remarks
    * A getter is used to avoid accessing the internal data storage of items.
    * The value is also computed so a getter is suitable.
    */
@@ -58,7 +65,7 @@ export class Stack<T> {
    * @param item - Item to push onto the stack.
    * @param items - Items to push onto the stack.
    *
-   * @Remarks
+   * @remarks
    * Encorporates method signature overloading to support multiple parameters
    * for the same implementation to improve reusability.
    */
@@ -134,7 +141,7 @@ export class Stack<T> {
    * Splits the given stack into multiple stack. This does not modify the stack
    * passed in, {@link stack}.
    *
-   * @typeparam T - The type of items stored in the stack.
+   * @typeparam `T` - The type of items stored in the stack.
    * @param stack - The stack to be split.
    * @param n - The number of stacks to split {@link stack} into.
    * @returns An array of the created stacks.
@@ -174,7 +181,7 @@ export class Stack<T> {
    * Merges an array of stacks into a new, single stack. By pushing them
    * ontop of each other
    *
-   * @typeparam T - The type of items stored in the stacks.
+   * @typeparam `T` - The type of items stored in the stacks.
    * @param stacks - The array of stacks to be merged.
    * @returns The newly ceeated merged stack.
    *
