@@ -12,7 +12,7 @@ type CardType = "player" | "infection" | "epidemic";
 
 /**
  * External type that provides readonly access to {@link CardStack} by
- * using in built type Pick and a custom type @{link DeepReadonly} that
+ * using in built type Pick and a custom type {@link DeepReadonly} that
  * recursively makes a type readonly. We further encapsulate the card stack
  * by only exposing the contents property of the card stack as readonly.
  */
