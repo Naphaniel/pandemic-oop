@@ -18,16 +18,16 @@
  */
 export class Stack<T> {
   /**
-   * Private mutable array of items stored in the stack.
+   * Private mutable array of items stored in the {@link Stack}.
    *
    * @remarks
-   * Items in the stack are made private and are only accessible through getters
+   * Items in the {@link Stack} are made private and are only accessible through getters
    * and other methods in {@link Stack} class,for **encapsulation**.
    */
   private items: T[] = [];
 
   /**
-   * Gets the number of items in the stack.
+   * Gets the number of items in the {@link Stack}.
    *
    * @Remarks
    * A getter is used to avoid accessing the internal data storage of items.
@@ -38,9 +38,9 @@ export class Stack<T> {
   }
 
   /**
-   * Gets the item on the top of the stack without removing it.
+   * Gets the item on the top of the {@link Stack} without removing it.
    *
-   * @returns The top item on the stack or `undefined` if the stack is empty.
+   * @returns The top item on the {@link Stack} or `undefined` if the {@link Stack} is empty.
    *
    * @remarks
    * A getter is used to avoid accessing the internal data storage of items.
@@ -51,19 +51,19 @@ export class Stack<T> {
   }
 
   /**
-   * Checks if the stack is empty.
+   * Checks if the {@link Stack} is empty.
    *
-   * @returns 'true' if the stack is empty, otherwise 'false'.
+   * @returns 'true' if the {@link Stack} is empty, otherwise 'false'.
    */
   isEmpty(): boolean {
     return this.items.length === 0;
   }
 
   /**
-   * Pushes one or multiple items onto the top of the stack.
+   * Pushes one or multiple items onto the top of the {@link Stack}.
    *
-   * @param item - Item to push onto the stack.
-   * @param items - Items to push onto the stack.
+   * @param item - Item to push onto the {@link Stack}.
+   * @param items - Items to push onto the {@link Stack}.
    *
    * @remarks
    * Encorporates method signature overloading to support multiple parameters
@@ -80,16 +80,16 @@ export class Stack<T> {
   }
 
   /**
-   * Removes and returns the top item from the stack.
+   * Removes and returns the top item from the {@link Stack}.
    *
-   * @returns the item on the top of the stack, or `undefined` if the stack is empty.
+   * @returns the item on the top of the {@link Stack}, or `undefined` if the {@link Stack} is empty.
    */
   pop(): T | undefined {
     return this.items.pop();
   }
 
   /**
-   * Removes and returns a specific number of items from the top of the stack.
+   * Removes and returns a specific number of items from the top of the {@link Stack}.
    *
    * @param n - The number of items to remove.
    * @returns An array containing the removed items.
@@ -99,7 +99,7 @@ export class Stack<T> {
   }
 
   /**
-   * Removes all the items from the stack.
+   * Removes all the items from the {@link Stack}.
    */
   clear(): void {
     this.items = [];
@@ -107,7 +107,7 @@ export class Stack<T> {
 
   /**
    * Implements the Fisher-Yates algorithm ({@link https://en.wikipedia.org/wiki/Fisher–Yates_shuffle})
-   * to suffle the contents of the stack in place.
+   * to suffle the contents of the {@link Stack} in place.
    */
   shuffle(): void {
     for (let i = this.size - 1; i > 0; i--) {
@@ -117,42 +117,41 @@ export class Stack<T> {
   }
 
   /**
-   * Returns the string representation of the stack.
+   * Returns the string representation of the {@link Stack}.
    *
-   * @returns The string representation of the stack.
+   * @returns The string representation of the {@link Stack}.
    */
   toString(): string {
     return this.items.toString();
   }
 
   /**
-   * Returns an iterator for all the items in the stack, which enables iteration
+   * Returns an iterator for all the items in the {@link Stack}, which enables iteration
    * using a `for...of` loop.
    *
    * @remarks
-   * This enables consumers to iterate over the stack without being concerned
-   * about the underlying implementation of the stack.
+   * This enables consumers to iterate over the {@link Stack} without being concerned
+   * about the underlying implementation of the {@link Stack}.
    */
   *[Symbol.iterator](): IterableIterator<T> {
     yield* this.items;
   }
 
   /**
-   * Splits the given stack into multiple stack. This does not modify the stack
+   * Splits the given {@link Stack} into multiple {@link Stack}. This does not modify the {@link Stack}
    * passed in, {@link stack}.
    *
-   * @typeparam `T` - The type of items stored in the stack.
-   * @param stack - The stack to be split.
+   * @typeparam `T` - The type of items stored in the {@link Stack}.
+   * @param stack - The {@link Stack} to be split.
    * @param n - The number of stacks to split {@link stack} into.
    * @returns An array of the created stacks.
    * @throws {Error} If the number of times {@link n} to split {@link stack}
    * is less than 1.
    *
    * @remarks
-   * This method is static as it does not act on an instance specific instace
+   * This method is static as it does not act on an instance specific instance
    * of a stack.
    */
-
   static splitStacks<T>(stack: Stack<T>, n: number): Stack<T>[] {
     if (n < 1) {
       throw new Error(
@@ -178,16 +177,16 @@ export class Stack<T> {
   }
 
   /**
-   * Merges an array of stacks into a new, single stack. By pushing them
+   * Merges an array of stacks into a new, single {@link Stack}. By pushing them
    * ontop of each other
    *
    * @typeparam `T` - The type of items stored in the stacks.
    * @param stacks - The array of stacks to be merged.
-   * @returns The newly ceeated merged stack.
+   * @returns The newly ceeated merged {@link Stack}.
    *
    * @remarks
-   * This method is static as it does not act on an instance specific instace
-   * of a stack.
+   * This method is static as it does not act on an instance specific instance
+   * of a {@link Stack}.
    */
   static mergeStacks<T>(stacks: Stack<T>[]): Stack<T> {
     const mergedStack = new Stack<T>();

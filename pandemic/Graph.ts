@@ -35,7 +35,7 @@ export class Graph<T> {
   /**
    * Private mutable map which stores the vertices (keys) against an array
    * of their neighbouring vertices (values), effectively the edges of the
-   * graph.
+   * {@link Graph}.
    *
    * @remarks
    * We opted to use an adjaceny list over a adjacency matrix as the storage
@@ -43,20 +43,20 @@ export class Graph<T> {
    * adges in constant time. For our use case, the difference between the two
    * is neglibile.
    *
-   * This adjacency list is private so the internal data of the graph is
+   * This adjacency list is private so the internal data of the {@link Graph} is
    * encapsulated. Access is granted through getters and methods.
    */
   private readonly adjacencyList = new Map<T, T[]>();
 
   /**
-   * Builds a new graph of items from the given JSON file.
+   * Builds a new {@link Graph} of items from the given JSON file.
    *
-   * @typeParam `T` - The type of data stored within the graph.
+   * @typeParam `T` - The type of data stored within the {@link Graph}.
    * @param path - File path to the data file.
    *
    * @remarks
-   * This static method allows us to construct a graph with either a data
-   * file or an empty graph from the constructor. Seeding from a file
+   * This static method allows us to construct a {@link Graph} with either a data
+   * file or an empty {@link Graph} from the constructor. Seeding from a file
    * can automate a lot of setup.
    *
    * {@link GraphData} - this interface defines the shape of the data
@@ -87,7 +87,7 @@ export class Graph<T> {
   }
 
   /**
-   * Add a single or multiple vertices to the graph if the vertix does not
+   * Add a single or multiple vertices to the {@link Graph} if the vertix does not
    * already exist.
    *
    * @param vertices - A variadic parameter allowing a comma seperated list
@@ -107,7 +107,7 @@ export class Graph<T> {
   }
 
   /**
-   * Remove a single or multiple vertices from the graph.
+   * Remove a single or multiple vertices from the {@link Graph}.
    *
    * @param vertices - A variadic parameter allowing a comma sperated list of
    * arguments containing the vertices to add.
@@ -177,10 +177,10 @@ export class Graph<T> {
   }
 
   /**
-   * A query that finds vertices in the graph whose value satisifes a
+   * A query that finds vertices in the {@link Graph} whose value satisifes a
    * given condition.
    *
-   * @typeParam `K` - A key that exists within the object the graph is storing.
+   * @typeParam `K` - A key that exists within the object the {@link Graph} is storing.
    * @param key - The key of the property in the vertex to check.
    * @param value - The value that the key should match.
    * @returns An array containing matching vertices.
@@ -218,19 +218,19 @@ export class Graph<T> {
   }
 
   /**
-   * Checks whether the graph has a given vertex.
+   * Checks whether the {@link Graph} has a given vertex.
    *
-   * @param vertex - The vertex to check existance in the graph.
-   * @returns `true` if the vertex is in the graph, `false` otherwise.
+   * @param vertex - The vertex to check existance in the {@link Graph}.
+   * @returns `true` if the vertex is in the {@link Graph}, `false` otherwise.
    */
   hasVertex(vertex: T): boolean {
     return this.adjacencyList.has(vertex);
   }
 
   /**
-   * Returns the string representation of the graph.
+   * Returns the string representation of the {@link Graph}.
    *
-   * @returns the string representation of the graph.
+   * @returns the string representation of the {@link Graph}.
    */
   toString(): string {
     let result = "";
@@ -241,13 +241,12 @@ export class Graph<T> {
   }
 
   /**
-   * Returns an iterator for all the items in the graph, which enables iteration
+   * Returns an iterator for all the items in the {@link Graph}, which enables iteration
    * using a `for...of` loop.
    *
    * @remarks
-   * This enables consumers to iterate over the graph without being concerned
-   * about the underlying implementation of the graph. f.e if we channged
-   * to using a adjacency matrix
+   * This enables consumers to iterate over the {@link Graph} without being concerned
+   * about the underlying implementation f.e if we changedto using a adjacency matrix
    */
   *[Symbol.iterator](): IterableIterator<T> {
     yield* this.adjacencyList.keys();
