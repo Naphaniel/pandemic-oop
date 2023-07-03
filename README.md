@@ -13,6 +13,12 @@ The game is playable by importing the Game module and initialising a new game wi
 
 The game rules, the types in the code and the documentation should make it self-explanatory of how to play.
 
+If you want to add/configure additional City and Cards, configurations is done through:
+- `pandemic/data/cities.json`
+- `pandemic/data/epidemicCards.json`
+- `pandemic/data/infectionCards.json`
+- `pandemic/data/playerCards.json`
+
 Below is an example, 
 
 ```ts
