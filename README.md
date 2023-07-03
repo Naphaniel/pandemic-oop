@@ -1,4 +1,3 @@
-dex.# pandemic-oop
 Assignment for OOP Jun 2023
 
 # How to run
