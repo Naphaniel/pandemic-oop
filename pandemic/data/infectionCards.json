@@ -64,5 +64,23 @@
         "type": "infection",
         "city": "atalanta",
         "diseaseType": "black"
+    },
+    {
+        "id": "infection-12",
+        "type": "infection",
+        "city": "atalanta",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-13",
+        "type": "infection",
+        "city": "atalanta",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-14",
+        "type": "infection",
+        "city": "atalanta",
+        "diseaseType": "black"
     }
 ]

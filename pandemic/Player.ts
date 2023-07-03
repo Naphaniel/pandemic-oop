@@ -203,11 +203,6 @@ export class Player
   }
 
   discardCards(...cards: PlayerCard[]): this {
-    if (!this.hasTooManyCards) {
-      throw new Error(
-        "Cannot discard cards. You can only discard if you have > 7"
-      );
-    }
     this.cards = this.cards.filter((card) => !cards.includes(card));
     for (const card of cards) {
       this.playerCardDiscardedPile.put(card);
