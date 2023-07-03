@@ -78,6 +78,15 @@ export class City {
   ]);
 
   /**
+   * Gets whether the city is infected or not.
+   *
+   * @returns `true` if the city is infected, `false` otherwise.
+   */
+  get isInfected(): boolean {
+    return this.diseases.size > 0;
+  }
+
+  /**
    * Public constructor for typical instantiation of the {@link City}.
    *
    * @param name - The name of the city.
@@ -92,15 +101,6 @@ export class City {
     public readonly name: CityName,
     public hasResearchStation: boolean = false
   ) {}
-
-  /**
-   * Gets whether the city is infected or not.
-   *
-   * @returns `true` if the city is infected, `false` otherwise.
-   */
-  get isInfected(): boolean {
-    return this.diseases.size > 0;
-  }
 
   /**
    * Gets whether the city is infected with a specific disease.
@@ -160,37 +160,6 @@ export class CityNetwork {
   }
 
   /**
-   * Private utility method used by {@link CityNetwork.buildfromFile} to add
-   * a city to the {@link CityNetwork}
-   *
-   * @param city - The {@link City} to add.
-   *
-   * @remarks
-   * We can make this method private as the {@link CityNetwork} does not
-   * need to be modified after construction as the game board does not change.
-   */
-  private addCity(city: City): void {
-    if (!this.graph.hasVertex(city)) {
-      this.graph.addVertex(city);
-    }
-  }
-
-  /**
-   * Private utility method used by {@link CityNetwork.buildFromFile} to add
-   * a neighbour to a {@link City} in the {@link CityNetwork}.
-   *
-   * @param city - The {@link City} to add a neighbour to.
-   * @param neighBourCity - The neighbour to add.
-   *
-   * @remarks
-   * We can make this method private as the {@link CityNetwork} does not
-   * need to be modified after construction as the game board does not change.
-   */
-  private addNeighbour(city: City, neighbourCity: City): void {
-    this.graph.addEdge(city, neighbourCity);
-  }
-
-  /**
    * Getter to get all of the {@link City} with a research station built.
    *
    * @returns A readonly array of {@link City} where research stations have been
@@ -226,6 +195,37 @@ export class CityNetwork {
    */
   get cities(): readonly City[] {
     return this.graph.vertices;
+  }
+
+  /**
+   * Private utility method used by {@link CityNetwork.buildfromFile} to add
+   * a city to the {@link CityNetwork}
+   *
+   * @param city - The {@link City} to add.
+   *
+   * @remarks
+   * We can make this method private as the {@link CityNetwork} does not
+   * need to be modified after construction as the game board does not change.
+   */
+  private addCity(city: City): void {
+    if (!this.graph.hasVertex(city)) {
+      this.graph.addVertex(city);
+    }
+  }
+
+  /**
+   * Private utility method used by {@link CityNetwork.buildFromFile} to add
+   * a neighbour to a {@link City} in the {@link CityNetwork}.
+   *
+   * @param city - The {@link City} to add a neighbour to.
+   * @param neighBourCity - The neighbour to add.
+   *
+   * @remarks
+   * We can make this method private as the {@link CityNetwork} does not
+   * need to be modified after construction as the game board does not change.
+   */
+  private addNeighbour(city: City, neighbourCity: City): void {
+    this.graph.addEdge(city, neighbourCity);
   }
 
   /**

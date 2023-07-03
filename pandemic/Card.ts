@@ -22,12 +22,18 @@ export type ReadonlyCardPile<T extends Card> = Pick<
 >;
 
 /**
- * A lightweight, immutable type to carry around Card data. This did not
- * need to be a class as it is low level data.
+ * A lightweight, immutable type to carry around Card data.
+ *
+ * @remarks
+ * This did not need to be a class as it is low level data.
  *
  * We use this type as a 'super type/base type'. We do not export this type
  * but instead use {@link PlayerCard} {@link InfectionCard} and {@link EpidemicCard}
  * to provide immutable interfaces to the different types of card.
+ *
+ * This is also an example of the **Flyweight Pattern** as instead of having a
+ * seperate instance for a {@link PlayerCard}, {@link InfectionCard}, {@link Epidemic Card}
+ * we use share data by using the same instance just exposing as different types.
  *
  * Primarily accessed and used within the {@link CardStack} class.
  */
@@ -39,6 +45,11 @@ interface Card {
 /**
  * Lightweight interface which exposes an interfact to interact with player cards.
  * Exposing additional city and disease type fields.
+ *
+ * @remarks
+ * This is also an example of the **Flyweight Pattern** as instead of having a
+ * seperate instance for a {@link PlayerCard}, {@link InfectionCard}, {@link Epidemic Card}
+ * we use share data by using the same instance just exposing as different types.
  */
 export interface PlayerCard extends Card {
   readonly type: "player";
@@ -49,6 +60,11 @@ export interface PlayerCard extends Card {
 /**
  * Lightweight interface which exposes an interfact to interact with infection cards.
  * Exposing additional city and disease type fields.
+ *
+ * @remarks
+ * This is also an example of the **Flyweight Pattern** as instead of having a
+ * seperate instance for a {@link PlayerCard}, {@link InfectionCard}, {@link Epidemic Card}
+ * we use share data by using the same instance just exposing as different types.
  */
 export interface InfectionCard extends Card {
   readonly type: "infection";
@@ -60,6 +76,11 @@ export interface InfectionCard extends Card {
  * Lightweight interface which exposes an interfact to interact with epidemic cards.
  * Although there are no additional fields exposed, we ensure that the type of
  * these cards can only be "epidemic" for better static type checking.
+ *
+ * @remarks
+ * This is also an example of the **Flyweight Pattern** as instead of having a
+ * seperate instance for a {@link PlayerCard}, {@link InfectionCard}, {@link Epidemic Card}
+ * we use share data by using the same instance just exposing as different types.
  */
 export interface EpidemicCard extends Card {
   readonly type: "epidemic";
@@ -145,6 +166,20 @@ export class CardStack<T extends Card> {
   }
 
   /**
+   * Gets the cards stored in the {@link CardStack}.
+   *
+   * @returns An immutable, readonly array containing the cards in the {@link CardStack}.
+   *
+   * @remarks
+   * We ensure that the return is immutable so the consumer cannot add
+   * or modify the internal {@link Stack}. The cards are already readonly through
+   * their interfaces.
+   */
+  get contents(): readonly T[] {
+    return [...this.stack];
+  }
+
+  /**
    * Private constructor to enforce initialisation of {@link CardStack} through
    * static methods {@link CardStack.buildFromFile}, {@link CardStack.buildEmptyStack}
    * and {@link CardStack.buildFromExistingStack}. Also to enforce encapsulation.
@@ -158,20 +193,6 @@ export class CardStack<T extends Card> {
    * is only exposed externally through the {@link ReadonlyCardPile} type.
    */
   private constructor(private stack = new Stack<T>()) {}
-
-  /**
-   * Gets the cards stored in the {@link CardStack}.
-   *
-   * @returns An immutable, readonly array containing the cards in the {@link CardStack}.
-   *
-   * @remarks
-   * We ensure that the return is immutable so the consumer cannot add
-   * or modify the internal {@link Stack}. The cards are already readonly through
-   * their interfaces.
-   */
-  get contents(): readonly T[] {
-    return [...this.stack];
-  }
 
   /**
    * Internal utility method used to build a {@link CardStack} from an existing

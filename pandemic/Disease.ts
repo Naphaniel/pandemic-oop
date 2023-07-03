@@ -52,6 +52,10 @@ export interface DiseaseObserver {
  * As this class is exported we pay extra attention to what class members are
  * visible for public consumption through access modifiers and method return
  * types.
+ *
+ * Implements the **Observer Pattern** through notifying observers of 3 types
+ * of event {@link DiseaseManager.notifyAllCuresCured},
+ * {@link DiseaseManager.notifyEightOutbreaks} and {@link DiseaseManager.notifyNoDiseaseCubes}
  */
 export class DiseaseManager {
   /**
@@ -75,6 +79,19 @@ export class DiseaseManager {
   private readonly infectionRateSequence: readonly number[];
   private infectionRateStep: number;
   outbreaks: number;
+
+  /**
+   * Gets the current infection rate value.
+   *
+   * @returns The current infection rate value.
+   *
+   * @remarks
+   * As the {@link DiseaseManager.infectionRateSequence} is private, we
+   * expose what we need in a calculation safely using this getter.
+   */
+  get infectionRate(): number {
+    return this.infectionRateSequence[this.infectionRateStep];
+  }
 
   /**
    * Public constructor for typical instantiation of the {@link DiseaseManager}.
@@ -109,18 +126,7 @@ export class DiseaseManager {
     this.initializeGlobalDiseaseCubeCounts();
   }
 
-  /**
-   * Gets the current infection rate value.
-   *
-   * @returns The current infection rate value.
-   *
-   * @remarks
-   * As the {@link DiseaseManager.infectionRateSequence} is private, we
-   * expose what we need in a calculation safely using this getter.
-   */
-  get infectionRate(): number {
-    return this.infectionRateSequence[this.infectionRateStep];
-  }
+  // ACCESSORS & HELPERS
 
   /**
    * Internal utility method used to initialize {@link DiseaseManager.globalDiseaseStates}
@@ -183,97 +189,6 @@ export class DiseaseManager {
   }
 
   /**
-   * Eradicates a disease.
-   *
-   * @param diseaseType - The {@link DiseaseType} to eradicate.
-   *
-   * @remarks
-   * If, once a disease has been eradicated, all of the diseases have been
-   * at least cured, following the **Observer (pub/sub) Pattern** all observers
-   * of {@link DiseaseManager} are notified. Promoting a loose coupling between
-   * the {@link DiseaseManager} and it's observers
-   */
-  private eradicateDisease(diseaseType: DiseaseType): void {
-    this.globalDiseaseStates.set(diseaseType, "eradicated");
-    if (this.areAllDiseasesCured()) {
-      this.notifyAllCuresCured();
-    }
-  }
-
-  /**
-   * Notifies all observers that eight outbreaks have occured.
-   *
-   * @remarks
-   * Part of the **Observer (pub/sub) Pattern** where all observers of
-   * {@link DiseaseManager} are notified. Promoting a loose coupling between
-   * the {@link DiseaseManager} and it's observers
-   */
-  private notifyEightOutbreaks(): void {
-    for (const observer of this.observers) {
-      observer.onEightOutbreaks();
-    }
-  }
-
-  /**
-   * Notifies all observers that no disease cubes of a colour are left.
-   *
-   * @remarks
-   * Part of the **Observer (pub/sub) Pattern** where all observers of
-   * {@link DiseaseManager} are notified. Promoting a loose coupling between
-   * the {@link DiseaseManager} and it's observers
-   */
-  private notifyNoDiseaseCubes(): void {
-    for (const observer of this.observers) {
-      observer.onNoDiseaseCubes();
-    }
-  }
-
-  /**
-   * Notifies all observers that all cures have been discovered.
-   *
-   * @remarks
-   * Part of the **Observer (pub/sub) Pattern** where all observers of
-   * {@link DiseaseManager} are notified. Promoting a loose coupling between
-   * the {@link DiseaseManager} and it's observers
-   */
-  private notifyAllCuresCured(): void {
-    for (const observer of this.observers) {
-      observer.onAllDiseasesCured();
-    }
-  }
-
-  /**
-   * Registers an observer to {@link DiseaseManager}.
-   *
-   * @param observer - The observer to register.
-   *
-   * @remarks
-   * Required plumbing for the **Observer (pub/sub) Pattern**
-   * This method is not exposed when the {@link DiseaseManager} is exposed
-   * through {@link ReadonlyDiseaseManager} so it cannot be misused.
-   */
-  registerObserver(observer: DiseaseObserver): void {
-    this.observers.push(observer);
-  }
-
-  /**
-   * Removes an observer from {@link DiseaseManager}.
-   *
-   * @param observer - The observer to remove.
-   *
-   * @remarks
-   * Required plumbing for the **Observer (pub/sub) Pattern**
-   * This method is not exposed when the {@link DiseaseManager} is exposed
-   * through {@link ReadonlyDiseaseManager} so it cannot be misused.
-   */
-  removeObserver(observer: DiseaseObserver): void {
-    const index = this.observers.indexOf(observer);
-    if (index !== -1) {
-      this.observers.splice(index, 1);
-    }
-  }
-
-  /**
    * Gets the global disease cube count of a {@link DiseaseType}.
    *
    * @param diseaseType - The {@link DiseaseType} to get the disease cube count for.
@@ -314,6 +229,26 @@ export class DiseaseManager {
    */
   getStateOf(diseaseType: DiseaseType): DiseaseState {
     return this.globalDiseaseStates.get(diseaseType) || "uncured";
+  }
+
+  // ---- GAME LOGIC ----
+
+  /**
+   * Eradicates a disease.
+   *
+   * @param diseaseType - The {@link DiseaseType} to eradicate.
+   *
+   * @remarks
+   * If, once a disease has been eradicated, all of the diseases have been
+   * at least cured, following the **Observer (pub/sub) Pattern** all observers
+   * of {@link DiseaseManager} are notified. Promoting a loose coupling between
+   * the {@link DiseaseManager} and it's observers
+   */
+  private eradicateDisease(diseaseType: DiseaseType): void {
+    this.globalDiseaseStates.set(diseaseType, "eradicated");
+    if (this.areAllDiseasesCured()) {
+      this.notifyAllCuresCured();
+    }
   }
 
   /**
@@ -475,6 +410,81 @@ export class DiseaseManager {
 
     if (this.outbreaks === 8) {
       this.notifyEightOutbreaks();
+    }
+  }
+
+  // ---- OBSERVER PATTERN ----
+
+  /**
+   * Notifies all observers that eight outbreaks have occured.
+   *
+   * @remarks
+   * Part of the **Observer (pub/sub) Pattern** where all observers of
+   * {@link DiseaseManager} are notified. Promoting a loose coupling between
+   * the {@link DiseaseManager} and it's observers
+   */
+  private notifyEightOutbreaks(): void {
+    for (const observer of this.observers) {
+      observer.onEightOutbreaks();
+    }
+  }
+
+  /**
+   * Notifies all observers that no disease cubes of a colour are left.
+   *
+   * @remarks
+   * Part of the **Observer (pub/sub) Pattern** where all observers of
+   * {@link DiseaseManager} are notified. Promoting a loose coupling between
+   * the {@link DiseaseManager} and it's observers
+   */
+  private notifyNoDiseaseCubes(): void {
+    for (const observer of this.observers) {
+      observer.onNoDiseaseCubes();
+    }
+  }
+
+  /**
+   * Notifies all observers that all cures have been discovered.
+   *
+   * @remarks
+   * Part of the **Observer (pub/sub) Pattern** where all observers of
+   * {@link DiseaseManager} are notified. Promoting a loose coupling between
+   * the {@link DiseaseManager} and it's observers
+   */
+  private notifyAllCuresCured(): void {
+    for (const observer of this.observers) {
+      observer.onAllDiseasesCured();
+    }
+  }
+
+  /**
+   * Registers an observer to {@link DiseaseManager}.
+   *
+   * @param observer - The observer to register.
+   *
+   * @remarks
+   * Required plumbing for the **Observer (pub/sub) Pattern**
+   * This method is not exposed when the {@link DiseaseManager} is exposed
+   * through {@link ReadonlyDiseaseManager} so it cannot be misused.
+   */
+  registerObserver(observer: DiseaseObserver): void {
+    this.observers.push(observer);
+  }
+
+  /**
+   * Removes an observer from {@link DiseaseManager}.
+   *
+   * @param observer - The observer to remove.
+   *
+   * @remarks
+   * Required plumbing for the **Observer (pub/sub) Pattern**
+   * This method is not exposed when the {@link DiseaseManager} is exposed
+   * through {@link ReadonlyDiseaseManager} so it cannot be misused.
+   */
+  removeObserver(observer: DiseaseObserver): void {
+    const index = this.observers.indexOf(observer);
+    if (index !== -1) {
+      this.observers.splice(index, 1);
     }
   }
 }
