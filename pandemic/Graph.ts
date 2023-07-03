@@ -86,6 +86,8 @@ export class Graph<T> {
     return [...this.adjacencyList.keys()];
   }
 
+  // ---- LOGIC ----
+
   /**
    * Add a single or multiple vertices to the {@link Graph} if the vertix does not
    * already exist.
@@ -226,6 +228,8 @@ export class Graph<T> {
   hasVertex(vertex: T): boolean {
     return this.adjacencyList.has(vertex);
   }
+
+  // ---- UTILS ----
 
   /**
    * Returns the string representation of the {@link Graph}.

@@ -102,6 +102,8 @@ export class City {
     public hasResearchStation: boolean = false
   ) {}
 
+  // ---- UTILS & ACCESSORS ----
+
   /**
    * Gets whether the city is infected with a specific disease.
    *
@@ -197,6 +199,8 @@ export class CityNetwork {
     return this.graph.vertices;
   }
 
+  // ---- LOGIC ----
+
   /**
    * Private utility method used by {@link CityNetwork.buildfromFile} to add
    * a city to the {@link CityNetwork}
@@ -286,6 +290,8 @@ export class CityNetwork {
     const tempCity = typeof city === "string" ? this.getCityByName(city) : city;
     return this.graph.getNeighbours(tempCity);
   }
+
+  // ---- UTILS ----
 
   /**
    * Returns an iterator for all of the {@link City} in the {@link CityNetwork},

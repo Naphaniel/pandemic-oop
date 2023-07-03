@@ -58,6 +58,23 @@ type Difficulty = "introduction" | "normal" | "heroic";
 /**
  * Interface for a game that whose state is passed 'setting-up'.
  *
+ * Exposes:
+ * - {@link ConcreteGame.state}, to view readonly state.
+ * - {@link ConcreteGame.diseaseManager}, a readonly disease manager.
+ * - {@link ConcreteGame.difficulty}, to view readonly difficulty.
+ * - {@link ConcreteGame.playingOrder}, a readonly list of playing order.
+ * - {@link ConcreteGame.playerCardDrawPile}, a readonly card pile storing player
+ *   and epidemic cards.
+ * - {@link ConcreteGame.playerCardDiscardedPile}, a readonly card pile storing
+ *   discarded player and epidemic cards.
+ * - {@link ConcreteGame.infectionCardDrawPile}, a readonly card pile storing
+ *   infection cards.
+ * - {@link ConcreteGame.infectionCardDiscardedPile}, a readonly card pile storing
+ *   discarded infection cards.
+ * - {@link ConcreteGame.players}, a readonly array of immutable player objects.
+ * - {@link ConcreteGame.cityNetwork}, a readonly view of the city network.
+ * - {@link ConcreteGame.player}, a method to get a readonly version of a player.
+ *
  * @remarks
  * We use this interface as a super type/interface (or parent) for the subsequent
  * game state interfaces.

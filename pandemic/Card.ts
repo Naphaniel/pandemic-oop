@@ -24,6 +24,10 @@ export type ReadonlyCardPile<T extends Card> = Pick<
 /**
  * A lightweight, immutable type to carry around Card data.
  *
+ * Exposes:
+ * - {@link Card.id}, readonly identification string of the card.
+ * - {@link Card.type}, readonly type of the card.
+ *
  * @remarks
  * This did not need to be a class as it is low level data.
  *
@@ -46,6 +50,11 @@ interface Card {
  * Lightweight interface which exposes an interfact to interact with player cards.
  * Exposing additional city and disease type fields.
  *
+ * Extends {@link Card}, further exposing:
+ * - {@link PlayerCard.type}, as the literal "player".
+ * - {@link PlayerCard.city}, as an optional name for the city if the card is a city card.
+ * - {@link PlayerCard.diseaseType}, as an optional disease type if a diseae card.
+ *
  * @remarks
  * This is also an example of the **Flyweight Pattern** as instead of having a
  * seperate instance for a {@link PlayerCard}, {@link InfectionCard}, {@link Epidemic Card}
@@ -60,6 +69,11 @@ export interface PlayerCard extends Card {
 /**
  * Lightweight interface which exposes an interfact to interact with infection cards.
  * Exposing additional city and disease type fields.
+ *
+ * Extends {@link Card}, further exposing:
+ * - {@link PlayerCard.type}, as the literal "infection".
+ * - {@link PlayerCard.city}, the name for the city on the card.
+ * - {@link PlayerCard.diseaseType}, the disease type on the card.
  *
  * @remarks
  * This is also an example of the **Flyweight Pattern** as instead of having a
@@ -76,6 +90,9 @@ export interface InfectionCard extends Card {
  * Lightweight interface which exposes an interfact to interact with epidemic cards.
  * Although there are no additional fields exposed, we ensure that the type of
  * these cards can only be "epidemic" for better static type checking.
+ *
+ * Extends {@link Card}, further exposing:
+ * - {@link PlayerCard.type}, as the literal "epidemic".
  *
  * @remarks
  * This is also an example of the **Flyweight Pattern** as instead of having a
@@ -194,6 +211,8 @@ export class CardStack<T extends Card> {
    */
   private constructor(private stack = new Stack<T>()) {}
 
+  // ---- LOGIC ----
+
   /**
    * Internal utility method used to build a {@link CardStack} from an existing
    * {@link Stack}.
@@ -258,6 +277,8 @@ export class CardStack<T extends Card> {
   clear(): void {
     this.stack.clear();
   }
+
+  // ---- UTILS ----
 
   /**
    * Returns an iterator for all the cards in the {@link CardStack}, which enables iteration

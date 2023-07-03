@@ -18,6 +18,69 @@
  */
 export class Stack<T> {
   /**
+   * Splits the given {@link Stack} into multiple {@link Stack}. This does not modify the {@link Stack}
+   * passed in, {@link stack}.
+   *
+   * @typeparam `T` - The type of items stored in the {@link Stack}.
+   * @param stack - The {@link Stack} to be split.
+   * @param n - The number of stacks to split {@link stack} into.
+   * @returns An array of the created stacks.
+   * @throws {Error} If the number of times {@link n} to split {@link stack}
+   * is less than 1.
+   *
+   * @remarks
+   * This method is static as it does not act on an instance specific instance
+   * of a stack.
+   */
+  static splitStacks<T>(stack: Stack<T>, n: number): Stack<T>[] {
+    if (n < 1) {
+      throw new Error(
+        "Invalid number of stacks. Number of stacks should be greater than 0."
+      );
+    }
+
+    const stackSize = Math.ceil(stack.size / n);
+    const stacks: Stack<T>[] = [];
+
+    for (let i = 0; i < stack.size; i += stackSize) {
+      const newStack = new Stack<T>();
+      const end = Math.min(i + stackSize, stack.size);
+
+      for (let j = i; j < end; j++) {
+        newStack.push(stack.items[j]);
+      }
+
+      stacks.push(newStack);
+    }
+
+    return stacks;
+  }
+
+  /**
+   * Merges an array of stacks into a new, single {@link Stack}. By pushing them
+   * ontop of each other
+   *
+   * @typeparam `T` - The type of items stored in the stacks.
+   * @param stacks - The array of stacks to be merged.
+   * @returns The newly ceeated merged {@link Stack}.
+   *
+   * @remarks
+   * This method is static as it does not act on an instance specific instance
+   * of a {@link Stack}.
+   */
+  static mergeStacks<T>(stacks: Stack<T>[]): Stack<T> {
+    const mergedStack = new Stack<T>();
+
+    for (const stack of stacks) {
+      while (!stack.isEmpty()) {
+        mergedStack.push(stack.pop()!);
+      }
+    }
+
+    return mergedStack;
+  }
+
+  /**
    * Private mutable array of items stored in the {@link Stack}.
    *
    * @remarks
@@ -50,6 +113,8 @@ export class Stack<T> {
     return this.items[this.size - 1];
   }
 
+  // ---- UTILS & ACCESSORS ----
+
   /**
    * Checks if the {@link Stack} is empty.
    *
@@ -58,6 +123,8 @@ export class Stack<T> {
   isEmpty(): boolean {
     return this.items.length === 0;
   }
+
+  // ---- LOGIC ----
 
   /**
    * Pushes one or multiple items onto the top of the {@link Stack}.
@@ -125,6 +192,8 @@ export class Stack<T> {
     return this.items.toString();
   }
 
+  // ---- UTILS ----
+
   /**
    * Returns an iterator for all the items in the {@link Stack}, which enables iteration
    * using a `for...of` loop.
@@ -135,68 +204,5 @@ export class Stack<T> {
    */
   *[Symbol.iterator](): IterableIterator<T> {
     yield* this.items;
-  }
-
-  /**
-   * Splits the given {@link Stack} into multiple {@link Stack}. This does not modify the {@link Stack}
-   * passed in, {@link stack}.
-   *
-   * @typeparam `T` - The type of items stored in the {@link Stack}.
-   * @param stack - The {@link Stack} to be split.
-   * @param n - The number of stacks to split {@link stack} into.
-   * @returns An array of the created stacks.
-   * @throws {Error} If the number of times {@link n} to split {@link stack}
-   * is less than 1.
-   *
-   * @remarks
-   * This method is static as it does not act on an instance specific instance
-   * of a stack.
-   */
-  static splitStacks<T>(stack: Stack<T>, n: number): Stack<T>[] {
-    if (n < 1) {
-      throw new Error(
-        "Invalid number of stacks. Number of stacks should be greater than 0."
-      );
-    }
-
-    const stackSize = Math.ceil(stack.size / n);
-    const stacks: Stack<T>[] = [];
-
-    for (let i = 0; i < stack.size; i += stackSize) {
-      const newStack = new Stack<T>();
-      const end = Math.min(i + stackSize, stack.size);
-
-      for (let j = i; j < end; j++) {
-        newStack.push(stack.items[j]);
-      }
-
-      stacks.push(newStack);
-    }
-
-    return stacks;
-  }
-
-  /**
-   * Merges an array of stacks into a new, single {@link Stack}. By pushing them
-   * ontop of each other
-   *
-   * @typeparam `T` - The type of items stored in the stacks.
-   * @param stacks - The array of stacks to be merged.
-   * @returns The newly ceeated merged {@link Stack}.
-   *
-   * @remarks
-   * This method is static as it does not act on an instance specific instance
-   * of a {@link Stack}.
-   */
-  static mergeStacks<T>(stacks: Stack<T>[]): Stack<T> {
-    const mergedStack = new Stack<T>();
-
-    for (const stack of stacks) {
-      while (!stack.isEmpty()) {
-        mergedStack.push(stack.pop()!);
-      }
-    }
-
-    return mergedStack;
   }
 }
