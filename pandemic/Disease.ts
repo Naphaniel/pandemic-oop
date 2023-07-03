@@ -322,7 +322,7 @@ export class DiseaseManager {
    * If  all of the diseases have been at least cured, following the
    * **Observer (pub/sub) Pattern** all observers of {@link DiseaseManager}
    * are notified. Promoting a loose coupling between the {@link DiseaseManager}
-   * and it's observers.
+   * and its observers.
    */
   cureDisease(diseaseType: DiseaseType): void {
     if (this.getStateOf(diseaseType) !== "uncured") {

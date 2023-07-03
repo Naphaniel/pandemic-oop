@@ -111,7 +111,7 @@ interface SetupGame {
  * - {@link ConcreteGame.withPlayingOrder}, to set the playing order.
  * - {@link ConcreteGame.withDifficulty}, to set the difficulty.
  *
- * We also expose **State Pattern* methods for lifecycle management:
+ * We also expose **State Pattern** methods for lifecycle management:
  * - {@link ConcreteGame.start}, to progress a game to {@link GameInProgress} state.
  *
  * @remarks
@@ -228,7 +228,7 @@ export const Game = {
  */
 class ConcreteGame implements PlayerObserver, DiseaseObserver {
   /**
-   * Constant variable used to keep track of the next game ID.
+   * Static variable used to keep track of the next game ID.
    */
   private static nextId: number = 0;
 
@@ -354,15 +354,14 @@ class ConcreteGame implements PlayerObserver, DiseaseObserver {
   }
 
   /**
-   * Method to remove a player from the game..
+   * Method to remove a player from the game.
    *
    * @param name - The name of the player to remove.
    * @returns A reference to the game instance.
    *
    * @remarks
-   * We utilise three patterns here:
-   * - **Fluent Interface/API pattern**: Returning an instance of the type to allow
-   *   method chaining with other builder pattern methods.
+   * We utilise the **Fluent Interface/API pattern** by returning an instance
+   * of the type to allow method chaining with other builder pattern methods.
    */
   removePlayer(name: string): this {
     const player = this.internalPlayers.get(name);
@@ -467,7 +466,7 @@ class ConcreteGame implements PlayerObserver, DiseaseObserver {
   }
 
   /**
-   * **State Pattern* method to complete the game.
+   * **State Pattern** method to complete the game.
    *
    * @remarks
    * This is a **State Pattern** method which will transition the {@link ConcreteGame}
