@@ -1,8 +1,417 @@
 [
     {
-        "name": "atalanta",
+        "name": "san francisco",
         "neighbours": [
-            "london"
+            "tokyo",
+            "manila",
+            "los angeles",
+            "chicago"
+        ]
+    },
+    {
+        "name": "los angeles",
+        "neighbours": [
+            "sydney",
+            "mexico city",
+            "chicago",
+            "san francisco"
+        ]
+    },
+    {
+        "name": "chicago",
+        "neighbours": [
+            "san francisco",
+            "mexico city",
+            "los angeles",
+            "atlanta",
+            "montreal"
+        ]
+    },
+    {
+        "name": "mexico city",
+        "neighbours": [
+            "chicago",
+            "los angeles",
+            "miami",
+            "bogota",
+            "lima"
+        ]
+    },
+    {
+        "name": "atlanta",
+        "neighbours": [
+            "chicago",
+            "miami",
+            "washington"
+        ]
+    },
+    {
+        "name": "miami",
+        "neighbours": [
+            "mexico city",
+            "atlanta",
+            "washington",
+            "bogota"
+        ]
+    },
+    {
+        "name": "montreal",
+        "neighbours": [
+            "chicago",
+            "washington",
+            "new york"
+        ]
+    },
+    {
+        "name": "washington",
+        "neighbours": [
+            "new york",
+            "montreal",
+            "atlanta",
+            "miami"
+        ]
+    },
+    {
+        "name": "new york",
+        "neighbours": [
+            "montreal",
+            "washington",
+            "london",
+            "madrid"
+        ]
+    },
+    {
+        "name": "bogota",
+        "neighbours": [
+            "miami",
+            "mexico city",
+            "lima",
+            "sao paulo",
+            "buenos aires"
+        ]
+    },
+    {
+        "name": "lima",
+        "neighbours": [
+            "bogota",
+            "mexico city",
+            "santiago"
+        ]
+    },
+    {
+        "name": "santiago",
+        "neighbours": [
+            "lima"
+        ]
+    },
+    {
+        "name": "buenos aires",
+        "neighbours": [
+            "sao paulo",
+            "bogota"
+        ]
+    },
+    {
+        "name": "sao paulo",
+        "neighbours": [
+            "bueno aires",
+            "madrid",
+            "lagos"
+        ]
+    },
+    {
+        "name": "lagos",
+        "neighbours": [
+            "sao paulo",
+            "kinshasa",
+            "khartoum"
+        ]
+    },
+    {
+        "name": "kinshasa",
+        "neighbours": [
+            "lagos",
+            "johannesburg",
+            "khartoum"
+        ]
+    },
+    {
+        "name": "johannesburg",
+        "neighbours": [
+            "kinshasa",
+            "khartoum"
+        ]
+    },
+    {
+        "name": "khartoum",
+        "neighbours": [
+            "cairo"
+        ]
+    },
+    {
+        "name": "madrid",
+        "neighbours": [
+            "sao paulo",
+            "london",
+            "new york",
+            "paris",
+            "algiers"
+        ]
+    },
+    {
+        "name": "london",
+        "neighbours": [
+            "new york",
+            "madrid",
+            "paris",
+            "essen"
+        ]
+    },
+    {
+        "name": "paris",
+        "neighbours": [
+            "london",
+            "madrid",
+            "algiers",
+            "milan",
+            "essen"
+        ]
+    },
+    {
+        "name": "essen",
+        "neighbours": [
+            "london",
+            "paris",
+            "milan",
+            "st petersburg"
+        ]
+    },
+    {
+        "name": "milan",
+        "neighbours": [
+            "essen",
+            "paris",
+            "istanbul"
+        ]
+    },
+    {
+        "name": "st petersburg",
+        "neighbours": [
+            "essen",
+            "istanbul",
+            "moscow"
+        ]
+    },
+    {
+        "name": "algiers",
+        "neighbours": [
+            "madrid",
+            "paris",
+            "istanbul",
+            "cairo"
+        ]
+    },
+    {
+        "name": "cairo",
+        "neighbours": [
+            "khartoum",
+            "istanbul",
+            "baghdad",
+            "riyadh",
+            "algiers"
+        ]
+    },
+    {
+        "name": "istanbul",
+        "neighbours": [
+            "st petersburg",
+            "milan",
+            "moscow",
+            "algiers",
+            "cairo",
+            "baghdad"
+        ]
+    },
+    {
+        "name": "moscow",
+        "neighbours": [
+            "st petersburg",
+            "istanbul",
+            "tehran"
+        ]
+    },
+    {
+        "name": "tehran",
+        "neighbours": [
+            "moscow",
+            "baghdad",
+            "karachi",
+            "delhi"
+        ]
+    },
+    {
+        "name": "baghdad",
+        "neighbours": [
+            "tehran",
+            "istanbul",
+            "cairo",
+            "riyadh",
+            "karachi"
+        ]
+    },
+    {
+        "name": "riyadh",
+        "neighbours": [
+            "baghdad",
+            "cairo",
+            "karachi"
+        ]
+    },
+    {
+        "name": "karachi",
+        "neighbours": [
+            "riyadh",
+            "mumbai",
+            "baghdad",
+            "tehran",
+            "delhi"
+        ]
+    },
+    {
+        "name": "delhi",
+        "neighbours": [
+            "tehran",
+            "karachi",
+            "mumbai",
+            "kolkata",
+            "chennai"
+        ]
+    },
+    {
+        "name": "mumbai",
+        "neighbours": [
+            "karachi",
+            "delhi",
+            "chennai"
+        ]
+    },
+    {
+        "name": "chennai",
+        "neighbours": [
+            "mumbai",
+            "delhi",
+            "kolkata",
+            "bangkok",
+            "jakarta"
+        ]
+    },
+    {
+        "name": "kolkata",
+        "neighbours": [
+            "delhi",
+            "chennai",
+            "bangkok",
+            "hong kong"
+        ]
+    },
+    {
+        "name": "bangkok",
+        "neighbours": [
+            "kolkata",
+            "chennai",
+            "jakarta",
+            "ho chi minh city",
+            "hong kong"
+        ]
+    },
+    {
+        "name": "jakarta",
+        "neighbours": [
+            "sydney",
+            "ho chi minh city",
+            "chennai",
+            "bangkok"
+        ]
+    },
+    {
+        "name": "ho chi minh city",
+        "neighbours": [
+            "jakarta",
+            "bangkok",
+            "hong kong",
+            "manila"
+        ]
+    },
+    {
+        "name": "sydney",
+        "neighbours": [
+            "jakarta",
+            "los angeles",
+            "manila"
+        ]
+    },
+    {
+        "name": "manila",
+        "neighbours": [
+            "sydney",
+            "san francisco",
+            "ho chi minh city",
+            "hong kong",
+            "taipei"
+        ]
+    },
+    {
+        "name": "hong kong",
+        "neighbours": [
+            "kolkata",
+            "bangkok",
+            "ho chi minh city",
+            "manila",
+            "taipei",
+            "shanghai"
+        ]
+    },
+    {
+        "name": "taipei",
+        "neighbours": [
+            "manila",
+            "osaka",
+            "shanghai",
+            "hong kong"
+        ]
+    },
+    {
+        "name": "osaka",
+        "neighbours": [
+            "taipei",
+            "tokyo"
+        ]
+    },
+    {
+        "name": "shanghai",
+        "neighbours": [
+            "hong kong",
+            "taipei",
+            "beijing",
+            "seoul",
+            "tokyo"
+        ]
+    },
+    {
+        "name": "seoul",
+        "neighbours": [
+            "beijing",
+            "shanghai",
+            "tokyo"
+        ]
+    },
+    {
+        "name": "tokyo",
+        "neighbours": [
+            "seoul",
+            "shanghai",
+            "osaka",
+            "san francisco"
         ]
     }
 ]

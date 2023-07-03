@@ -6,7 +6,55 @@ import { DeepReadonly } from "./Utils";
 /**
  * Exported type used to represent all of the city names in the {@link CityNetwork}
  */
-export type CityName = "atalanta" | "london";
+export type CityName =
+  | "san francisco"
+  | "los angeles"
+  | "chicago"
+  | "mexico city"
+  | "atlanta"
+  | "montreal"
+  | "new york"
+  | "washington"
+  | "miami"
+  | "bogota"
+  | "lima"
+  | "santiago"
+  | "sao paulo"
+  | "buenos aires"
+  | "london"
+  | "madrid"
+  | "paris"
+  | "essen"
+  | "milan"
+  | "st petersburg"
+  | "lagos"
+  | "kinshasa"
+  | "johannesburg"
+  | "khartoum"
+  | "cairo"
+  | "algiers"
+  | "riyadh"
+  | "istanbul"
+  | "baghdad"
+  | "moscow"
+  | "tehran"
+  | "karachi"
+  | "mumbai"
+  | "delhi"
+  | "chennai"
+  | "kolkata"
+  | "bangkok"
+  | "jakarta"
+  | "sydney"
+  | "ho chi minh city"
+  | "manila"
+  | "hong kong"
+  | "taipei"
+  | "osaka"
+  | "tokyo"
+  | "seoul"
+  | "beijing"
+  | "shanghai";
 
 /**
  * Exported type that provides readonly access to {@link City} by using in built
@@ -148,12 +196,22 @@ export class CityNetwork {
     const cityNetwork = new CityNetwork();
 
     for (const cityData of data) {
-      const city = new City(cityData.name);
-      cityNetwork.addCity(city);
+      let city: City;
+      try {
+        city = cityNetwork.getCityByName(cityData.name);
+      } catch {
+        city = new City(cityData.name);
+        cityNetwork.addCity(city);
+      }
 
       for (const neighbour of cityData.neighbours) {
-        const neighbourCity = new City(neighbour);
-        cityNetwork.addCity(neighbourCity);
+        let neighbourCity: City;
+        try {
+          neighbourCity = cityNetwork.getCityByName(neighbour);
+        } catch {
+          neighbourCity = new City(neighbour);
+          cityNetwork.addCity(neighbourCity);
+        }
         cityNetwork.addNeighbour(city, neighbourCity);
       }
     }
@@ -212,7 +270,7 @@ export class CityNetwork {
    * need to be modified after construction as the game board does not change.
    */
   private addCity(city: City): void {
-    if (!this.graph.hasVertex(city)) {
+    if (!this.hasCity(city)) {
       this.graph.addVertex(city);
     }
   }
@@ -289,6 +347,17 @@ export class CityNetwork {
   getNeighbouringCities(city: City | CityName): City[] {
     const tempCity = typeof city === "string" ? this.getCityByName(city) : city;
     return this.graph.getNeighbours(tempCity);
+  }
+
+  /**
+   * Checks whether a city exists within the graph.
+   * @param city - The {@link City} to check the existance of.
+   * @returns `true` if the city exists, `false` otherwise.
+   */
+  private hasCity(city: City): boolean {
+    return this.cities.find((c) => c.name === city.name) === undefined
+      ? false
+      : true;
   }
 
   // ---- UTILS ----

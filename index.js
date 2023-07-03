@@ -8,9 +8,11 @@ const game = pandemic_1.Game.initialise()
     .withDifficulty("normal")
     .start();
 const [player1, player2] = game.players;
+console.log(game.cityNetwork.cities);
+console.log(player2.cards);
 player1
     .startTurn()
-    .driveTo("london")
+    .driveTo("chicago")
     .pass()
     .pass()
     .pass()

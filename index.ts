@@ -11,7 +11,7 @@ const [player1, player2] = game.players;
 
 player1
   .startTurn()
-  .driveTo("london")
+  .driveTo("chicago")
   .pass()
   .pass()
   .pass()

@@ -2,32 +2,32 @@
     {
         "id": "player-1",
         "type": "player",
-        "city": "atalanta"
+        "city": "san francisco"
     },
     {
         "id": "player-2",
         "type": "player",
-        "city": "atalanta"
+        "city": "chicago"
     },
     {
         "id": "player-3",
         "type": "player",
-        "city": "london"
+        "city": "atlanta"
     },
     {
         "id": "player-4",
         "type": "player",
-        "city": "london"
+        "city": "montreal"
     },
     {
         "id": "player-5",
         "type": "player",
-        "city": "london"
+        "city": "new york"
     },
     {
         "id": "player-6",
         "type": "player",
-        "city": "london"
+        "city": "washington"
     },
     {
         "id": "player-7",
@@ -37,46 +37,206 @@
     {
         "id": "player-8",
         "type": "player",
-        "city": "london"
+        "city": "madrid"
     },
     {
         "id": "player-9",
         "type": "player",
-        "city": "london"
+        "city": "paris"
     },
     {
-        "id": "player-9",
+        "id": "player-10",
         "type": "player",
-        "city": "london"
+        "city": "essen"
     },
     {
-        "id": "player-9",
+        "id": "player-11",
         "type": "player",
-        "city": "london"
+        "city": "milan"
     },
     {
-        "id": "player-9",
+        "id": "player-12",
         "type": "player",
-        "city": "london"
+        "city": "st petersburg"
     },
     {
-        "id": "player-9",
+        "id": "player-13",
         "type": "player",
-        "city": "london"
+        "city": "los angeles"
     },
     {
-        "id": "player-9",
+        "id": "player-14",
         "type": "player",
-        "city": "london"
+        "city": "mexico city"
     },
     {
-        "id": "player-9",
+        "id": "player-15",
         "type": "player",
-        "city": "london"
+        "city": "miami"
     },
     {
-        "id": "player-9",
+        "id": "player-16",
         "type": "player",
-        "city": "london"
+        "city": "lima"
+    },
+    {
+        "id": "player-17",
+        "type": "player",
+        "city": "bogota"
+    },
+    {
+        "id": "player-18",
+        "type": "player",
+        "city": "santiago"
+    },
+    {
+        "id": "player-19",
+        "type": "player",
+        "city": "buenos aires"
+    },
+    {
+        "id": "player-20",
+        "type": "player",
+        "city": "sao paulo"
+    },
+    {
+        "id": "player-21",
+        "type": "player",
+        "city": "lagos"
+    },
+    {
+        "id": "player-22",
+        "type": "player",
+        "city": "kinshasa"
+    },
+    {
+        "id": "player-23",
+        "type": "player",
+        "city": "johannesburg"
+    },
+    {
+        "id": "player-24",
+        "type": "player",
+        "city": "khartoum"
+    },
+    {
+        "id": "player-25",
+        "type": "player",
+        "city": "algiers"
+    },
+    {
+        "id": "player-26",
+        "type": "player",
+        "city": "cairo"
+    },
+    {
+        "id": "player-27",
+        "type": "player",
+        "city": "riyadh"
+    },
+    {
+        "id": "player-28",
+        "type": "player",
+        "city": "istanbul"
+    },
+    {
+        "id": "player-29",
+        "type": "player",
+        "city": "moscow"
+    },
+    {
+        "id": "player-30",
+        "type": "player",
+        "city": "tehran"
+    },
+    {
+        "id": "player-31",
+        "type": "player",
+        "city": "baghdad"
+    },
+    {
+        "id": "player-32",
+        "type": "player",
+        "city": "karachi"
+    },
+    {
+        "id": "player-33",
+        "type": "player",
+        "city": "mumbai"
+    },
+    {
+        "id": "player-34",
+        "type": "player",
+        "city": "delhi"
+    },
+    {
+        "id": "player-35",
+        "type": "player",
+        "city": "chennai"
+    },
+    {
+        "id": "player-36",
+        "type": "player",
+        "city": "kolkata"
+    },
+    {
+        "id": "player-37",
+        "type": "player",
+        "city": "jakarta"
+    },
+    {
+        "id": "player-38",
+        "type": "player",
+        "city": "sydney"
+    },
+    {
+        "id": "player-39",
+        "type": "player",
+        "city": "manila"
+    },
+    {
+        "id": "player-40",
+        "type": "player",
+        "city": "ho chi minh city"
+    },
+    {
+        "id": "player-41",
+        "type": "player",
+        "city": "bangkok"
+    },
+    {
+        "id": "player-42",
+        "type": "player",
+        "city": "hong kong"
+    },
+    {
+        "id": "player-43",
+        "type": "player",
+        "city": "taipei"
+    },
+    {
+        "id": "player-44",
+        "type": "player",
+        "city": "osaka"
+    },
+    {
+        "id": "player-45",
+        "type": "player",
+        "city": "tokyo"
+    },
+    {
+        "id": "player-46",
+        "type": "player",
+        "city": "seoul"
+    },
+    {
+        "id": "player-47",
+        "type": "player",
+        "city": "beijing"
+    },
+    {
+        "id": "player-48",
+        "type": "player",
+        "city": "shanghai"
     }
 ]

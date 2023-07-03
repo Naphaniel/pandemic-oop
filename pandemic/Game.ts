@@ -340,7 +340,7 @@ class ConcreteGame implements PlayerObserver, DiseaseObserver {
     if (this.playerCount >= 4) {
       throw new Error("Cannot add player. Can only have 4 players");
     }
-    const player = new Player(name, this.assignRandomRole(), "atalanta", {
+    const player = new Player(name, this.assignRandomRole(), "atlanta", {
       cityNetwork: this.cityNetwork,
       diseaseManager: this.diseaseManager,
       playerCardDiscardedPile: this.playerCardDiscardedPile,
@@ -460,7 +460,7 @@ class ConcreteGame implements PlayerObserver, DiseaseObserver {
     }
     this.setupCards();
     this.nextPlayerTurn();
-    this.cityNetwork.getCityByName("atalanta").hasResearchStation = true;
+    this.cityNetwork.getCityByName("atlanta").hasResearchStation = true;
     this.state = "in-progress";
     return this as GameInProgress;
   }

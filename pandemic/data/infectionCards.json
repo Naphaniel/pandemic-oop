@@ -2,85 +2,289 @@
     {
         "id": "infection-1",
         "type": "infection",
-        "city": "atalanta",
-        "diseaseType": "red"
+        "city": "san francisco",
+        "diseaseType": "blue"
     },
     {
         "id": "infection-2",
         "type": "infection",
-        "city": "atalanta",
-        "diseaseType": "yellow"
+        "city": "chicago",
+        "diseaseType": "blue"
     },
     {
         "id": "infection-3",
         "type": "infection",
-        "city": "atalanta",
+        "city": "atlanta",
         "diseaseType": "blue"
     },
     {
         "id": "infection-4",
         "type": "infection",
-        "city": "atalanta",
-        "diseaseType": "black"
+        "city": "montreal",
+        "diseaseType": "blue"
     },
     {
         "id": "infection-5",
         "type": "infection",
-        "city": "atalanta",
-        "diseaseType": "black"
+        "city": "washington",
+        "diseaseType": "blue"
     },
     {
         "id": "infection-6",
         "type": "infection",
-        "city": "atalanta",
-        "diseaseType": "black"
+        "city": "new york",
+        "diseaseType": "blue"
     },
     {
         "id": "infection-7",
         "type": "infection",
-        "city": "atalanta",
-        "diseaseType": "black"
+        "city": "los angeles",
+        "diseaseType": "yellow"
     },
     {
         "id": "infection-8",
         "type": "infection",
-        "city": "atalanta",
-        "diseaseType": "black"
+        "city": "mexico city",
+        "diseaseType": "yellow"
     },
     {
         "id": "infection-9",
         "type": "infection",
-        "city": "atalanta",
-        "diseaseType": "black"
+        "city": "miami",
+        "diseaseType": "yellow"
     },
     {
         "id": "infection-10",
         "type": "infection",
-        "city": "atalanta",
-        "diseaseType": "black"
+        "city": "bogota",
+        "diseaseType": "yellow"
     },
     {
         "id": "infection-11",
         "type": "infection",
-        "city": "atalanta",
-        "diseaseType": "black"
+        "city": "lima",
+        "diseaseType": "yellow"
     },
     {
         "id": "infection-12",
         "type": "infection",
-        "city": "atalanta",
-        "diseaseType": "black"
+        "city": "santiago",
+        "diseaseType": "yellow"
     },
     {
         "id": "infection-13",
         "type": "infection",
-        "city": "atalanta",
-        "diseaseType": "black"
+        "city": "buenos aires",
+        "diseaseType": "yellow"
     },
     {
         "id": "infection-14",
         "type": "infection",
-        "city": "atalanta",
+        "city": "sao paulo",
+        "diseaseType": "yellow"
+    },
+    {
+        "id": "infection-15",
+        "type": "infection",
+        "city": "lagos",
+        "diseaseType": "yellow"
+    },
+    {
+        "id": "infection-16",
+        "type": "infection",
+        "city": "kinshasa",
+        "diseaseType": "yellow"
+    },
+    {
+        "id": "infection-17",
+        "type": "infection",
+        "city": "johannesburg",
+        "diseaseType": "yellow"
+    },
+    {
+        "id": "infection-18",
+        "type": "infection",
+        "city": "khartoum",
+        "diseaseType": "yellow"
+    },
+    {
+        "id": "infection-19",
+        "type": "infection",
+        "city": "london",
+        "diseaseType": "blue"
+    },
+    {
+        "id": "infection-20",
+        "type": "infection",
+        "city": "madrid",
+        "diseaseType": "blue"
+    },
+    {
+        "id": "infection-21",
+        "type": "infection",
+        "city": "paris",
+        "diseaseType": "blue"
+    },
+    {
+        "id": "infection-22",
+        "type": "infection",
+        "city": "essen",
+        "diseaseType": "blue"
+    },
+    {
+        "id": "infection-23",
+        "type": "infection",
+        "city": "milan",
+        "diseaseType": "blue"
+    },
+    {
+        "id": "infection-24",
+        "type": "infection",
+        "city": "st petersburg",
+        "diseaseType": "blue"
+    },
+    {
+        "id": "infection-25",
+        "type": "infection",
+        "city": "algiers",
         "diseaseType": "black"
+    },
+    {
+        "id": "infection-26",
+        "type": "infection",
+        "city": "cairo",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-27",
+        "type": "infection",
+        "city": "riyadh",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-28",
+        "type": "infection",
+        "city": "istanbul",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-29",
+        "type": "infection",
+        "city": "moscow",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-30",
+        "type": "infection",
+        "city": "baghdad",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-31",
+        "type": "infection",
+        "city": "tehran",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-32",
+        "type": "infection",
+        "city": "karachi",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-33",
+        "type": "infection",
+        "city": "delhi",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-34",
+        "type": "infection",
+        "city": "mumbai",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-35",
+        "type": "infection",
+        "city": "chennai",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-36",
+        "type": "infection",
+        "city": "kolkata",
+        "diseaseType": "black"
+    },
+    {
+        "id": "infection-37",
+        "type": "infection",
+        "city": "jakarta",
+        "diseaseType": "red"
+    },
+    {
+        "id": "infection-38",
+        "type": "infection",
+        "city": "sydney",
+        "diseaseType": "red"
+    },
+    {
+        "id": "infection-39",
+        "type": "infection",
+        "city": "manila",
+        "diseaseType": "red"
+    },
+    {
+        "id": "infection-40",
+        "type": "infection",
+        "city": "ho chi minh city",
+        "diseaseType": "red"
+    },
+    {
+        "id": "infection-41",
+        "type": "infection",
+        "city": "bangkok",
+        "diseaseType": "red"
+    },
+    {
+        "id": "infection-42",
+        "type": "infection",
+        "city": "hong kong",
+        "diseaseType": "red"
+    },
+    {
+        "id": "infection-43",
+        "type": "infection",
+        "city": "taipei",
+        "diseaseType": "red"
+    },
+    {
+        "id": "infection-44",
+        "type": "infection",
+        "city": "osaka",
+        "diseaseType": "red"
+    },
+    {
+        "id": "infection-45",
+        "type": "infection",
+        "city": "tokyo",
+        "diseaseType": "red"
+    },
+    {
+        "id": "infection-46",
+        "type": "infection",
+        "city": "seoul",
+        "diseaseType": "red"
+    },
+    {
+        "id": "infection-47",
+        "type": "infection",
+        "city": "beijing",
+        "diseaseType": "red"
+    },
+    {
+        "id": "infection-48",
+        "type": "infection",
+        "city": "shanghai",
+        "diseaseType": "red"
     }
 ]
